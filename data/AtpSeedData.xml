@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<entity-facade-xml type="ext-seed">
+    <org.apache.ofbiz.common.enum.EnumerationType enumTypeId="AVAILABLE_TO_PROMISE" description="Available to promise"/>
+
+    <org.apache.ofbiz.common.enum.EnumerationType enumTypeId="CONDITION_TYPE" description="Filter Condition type" parentTypeId="AVAILABLE_TO_PROMISE"/>
+    <org.apache.ofbiz.common.enum.Enumeration enumId="ENTCT_ATP_SORT_BY" description="Order by" sequenceNum="5" enumTypeId="CONDITION_TYPE" enumCode="orderBy"/>
+    <org.apache.ofbiz.common.enum.Enumeration enumId="ENTCT_ATP_FILTER" description="Condition" sequenceNum="10" enumTypeId="CONDITION_TYPE" enumCode="condition"/>
+
+    <org.apache.ofbiz.common.enum.EnumerationType enumTypeId="ATP_RULE_ACT_TYPE" description="Determine the type of action to be performed in the context of rules" parentTypeId="AVAILABLE_TO_PROMISE"/>
+    <org.apache.ofbiz.common.enum.Enumeration enumId="ATP_THRESHOLD" description="Set threshold" sequenceNum="10" enumTypeId="ATP_RULE_ACT_TYPE" enumCode="SET_THRESHOLD"/>
+    <org.apache.ofbiz.common.enum.Enumeration enumId="ATP_SAFETY_STOCK" description="Set safety stock" sequenceNum="15" enumTypeId="ATP_RULE_ACT_TYPE" enumCode="SET_SAFETY_STOCK"/>
+    <org.apache.ofbiz.common.enum.Enumeration enumId="ATP_ALLOW_BROKERING" description="Enable brokering" sequenceNum="20" enumTypeId="ATP_RULE_ACT_TYPE" enumCode="SET_ALLOW_BROKERING"/>
+    <org.apache.ofbiz.common.enum.Enumeration enumId="ATP_ALLOW_PICKUP" description="Enable pickup" sequenceNum="25" enumTypeId="ATP_RULE_ACT_TYPE" enumCode="SET_ALLOW_PICKUP"/>
+    <org.apache.ofbiz.common.enum.Enumeration enumId="ATP_FACILITIES" description="Facilities for setting a value" sequenceNum="30" enumTypeId="ATP_RULE_ACT_TYPE" enumCode="FACILITIES"/>
+    <org.apache.ofbiz.common.enum.Enumeration enumId="ATP_FACILITY_GROUPS" description="Facility groups for setting a value" sequenceNum="35" enumTypeId="ATP_RULE_ACT_TYPE" enumCode="FACILITY_GROUPS"/>
+
+    <org.apache.ofbiz.common.status.StatusType statusTypeId="RG_STATUS" description="Rule Group Status" hasTable="N"/>
+    <org.apache.ofbiz.common.status.StatusType statusTypeId="ATP_RG_STATUS" parentTypeId="RG_STATUS" description="ATP Rule Group Status" hasTable="N"/>
+    <org.apache.ofbiz.common.status.StatusItem statusId="ATP_RG_DRAFT" description="Draft" sequenceId="01" statusCode="DRAFT" statusTypeId="RULE_GROUP_STATUS"/>
+    <org.apache.ofbiz.common.status.StatusItem statusId="ATP_RG_ACTIVE" description="Active" sequenceId="02" statusCode="ACTIVE" statusTypeId="RULE_GROUP_STATUS"/>
+    <org.apache.ofbiz.common.status.StatusItem statusId="ATP_RG_ARCHIVED" description="Archived" sequenceId="02" statusCode="ARCHIVED" statusTypeId="RULE_GROUP_STATUS"/>
+
+    <org.apache.ofbiz.common.status.StatusType statusTypeId="ATP_RULE_STATUS" parentTypeId="RG_STATUS" description="ATP Rule Status" hasTable="N"/>
+    <org.apache.ofbiz.common.status.StatusItem statusId="ATP_RULE_DRAFT" description="Draft" sequenceId="01" statusCode="DRAFT" statusTypeId="ATP_RULE_STATUS"/>
+    <org.apache.ofbiz.common.status.StatusItem statusId="ATP_RULE_ACTIVE" description="Active" sequenceId="02" statusCode="ACTIVE" statusTypeId="ATP_RULE_STATUS"/>
+    <org.apache.ofbiz.common.status.StatusItem statusId="ATP_RULE_ARCHIVED" description="Archived" sequenceId="02" statusCode="ARCHIVED" statusTypeId="ATP_RULE_STATUS"/>
+</entity-facade-xml>
