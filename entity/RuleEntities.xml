@@ -23,7 +23,7 @@ under the License.
         <description>Represents a group for organizing rules.</description>
         <field name="ruleGroupId" type="id" is-pk="true"><description>Unique identifier for the group</description></field>
         <field name="groupName" type="text-medium"><description>Name of the group.</description></field>
-        <field name="conditionTypeEnumId" type="id"><description>Type of the group.</description></field>
+        <field name="groupTypeEnumId" type="id"><description>Type of the group.</description></field>
         <field name="statusId" type="id" enable-audit-log="true"><description>Status identifier for the rule group.</description></field>
         <field name="sequenceNum" type="number-integer" enable-audit-log="true"><description>Sequence number for ordering.</description></field>
         <field name="description" type="text-long"><description>Description or additional information about the group.</description></field>
