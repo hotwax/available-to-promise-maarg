@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://moqui.org/xsd/service-definition-3.xsd">
+
+    <service verb="run" noun="ExportProductThreshold" authenticate="false" transaction-timeout="7200">
+        <description>Executes threshold rules.</description>
+        <in-parameters>
+            <parameter name="ruleGroupId" type="String" required="true"/>
+            <parameter name="productStoreId" type="String" required="true"/>
+        </in-parameters>
+        <actions>
+            <entity-find-one entity-name="co.hotwax.common.RuleGroup" value-field="ruleGroup">
+                <field-map field-name="ruleGroupId" from="ruleGroupId"/>
+                <field-map field-name="productStoreId" from="productStoreId"/>
+            </entity-find-one>
+            <if condition="!ruleGroup">
+                <return error="true" message="No rule group found."/>
+            </if>
+
+            <service-call name="co.hotwax.product.ThresholdServices.build#ruleTemplate"
+                    in-map="[ruleGroupId: ruleGroupId]"
+                    out-map="templateResult"/>
+            <set field="ruleTemplateBytes" from="templateResult.ruleTemplateBytes"/>
+            <if condition="!ruleTemplateBytes">
+                <return error="true" message="Error in building rule template."/>
+            </if>
+            <script>
+                import org.kie.api.KieServices;
+                import org.kie.internal.utils.KieHelper;
+                import org.kie.api.io.Resource;
+                import org.kie.api.io.ResourceType;
+                import org.kie.api.KieBase;
+                import org.kie.api.KieServices
+
+                kieServices = KieServices.Factory.get();
+                kieHelper = new KieHelper();
+                resource = kieServices.getResources().newByteArrayResource(ruleTemplateBytes);
+                kieHelper.addResource(resource, ResourceType.DRL);
+                kieBase = kieHelper.build();
+                kieSession = kieBase.newKieSession();
+                productFacilityDetail = [:]
+            </script>
+
+            <set field="viewSize" value="1000"/>
+            <set field="viewIndex" value="0"/>
+            <service-call name="co.hotwax.product.ThresholdServices.get#Products"
+                          in-map="[viewIndex: viewIndex, viewSize: viewSize]"
+                          out-map="productResult"/>
+            <set field="products" from="productResult.productDetail.products"/>
+            <set field="totalProducts" from="productResult.productDetail.totalCount"/>
+
+            <iterate list="products" entry="product">
+                <script>
+                    kieSession.setGlobal("productFacilityDetail", productFacilityDetail);
+                    kieSession.insert(product);
+                    int numberOfRulesFired = kieSession.fireAllRules();
+                </script>
+            </iterate>
+            <service-call name="co.hotwax.product.ThresholdServices.prepare#ThresholdCsv"
+                          in-map="[products: productFacilityDetail.values()]"
+                          out-map="result"/>
+            <!--The fileName will be used in subsequent calls in order to keep only one CSV file in a single run. So if fileName is passed, data get appended to the existing file-->
+            <set field="fileName" from="result.fileName"/>
+            <script>
+                import co.hotwax.common.CommerceUtil
+                paginationValues = CommerceUtil.getPaginationValues(viewSize, 0, totalProducts)
+                viewIndexLast = paginationValues.viewIndexLast
+                viewIndexList = (1..viewIndexLast).toList()
+            </script>
+            <iterate list="viewIndexList" entry="viewIndex">
+                <service-call name="co.hotwax.product.ThresholdServices.get#Products"
+                        in-map="[viewIndex: viewIndex*viewSize, viewSize: viewSize]"
+                        out-map="productResult"/>
+                <set field="products" from="productResult.productDetail.products"/>
+                <iterate list="products" entry="product">
+                    <script>
+                        kieSession.setGlobal("productFacilityDetail", productFacilityDetail);
+                        kieSession.insert(product);
+                        int numberOfRulesFired = kieSession.fireAllRules();
+                    </script>
+                </iterate>
+                <service-call name="co.hotwax.product.ThresholdServices.prepare#ThresholdCsv"
+                        in-map="[products: productFacilityDetail.values(), fileName: fileName]"
+                        out-map="result"/>
+            </iterate>
+
+            <script>
+                kieSession.dispose();
+            </script>
+
+            <log message="Threshold rules executed successfully for rule group [${ruleGroupId}]."/>
+        </actions>
+    </service>
+    <service verb="prepare" noun="ThresholdCsv" authenticate="false" transaction-timeout="7200">
+        <description>Prepare threshold csv.</description>
+        <in-parameters>
+            <parameter name="products" type="List" required="true"/>
+            <parameter name="fileName" type="String" required="false"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="fileName" type="String" required="true"/>
+        </out-parameters>
+        <actions>
+            <if condition="!products">
+                <return error="No products found."/>
+            </if>
+            <!--Need to find some config location to set this-->
+            <set field="fileLocation" value="runtime/component/available-to-proimse/dataDir"/>
+            <set field="csvTemplateLocation" value="component://available-to-promise/template/ExportProductThreshold.csv.ftl"/>
+
+            <!--flag to include/exclude csv header if updating/writing the csv-->
+            <set field="skipHeader" value="N"/>
+            <script>
+                StringBuilder outputLocation = new StringBuilder();
+                outputLocation.append(fileLocation);
+                outputDir = new File(outputLocation.toString());
+                if (!outputDir.exists()) {
+                    boolean created = outputDir.mkdirs();
+                    if (!created) {
+                        ec.logger.error("Directory not created.")
+                        ec.message.addError("Directory not created.")
+                        return
+                    }
+                }
+
+                Writer writer = new StringWriter()
+                ec.resourceFacade.template(csvTemplateLocation, writer)
+
+                data = writer.toString()
+                if (data) {
+                    if (!fileName) {
+                        fileName = new StringBuilder("PRODUCT_THRESHOLD_").append(ec.user.nowTimestamp).append(".csv");
+                    } else {
+                        skipHeader = "Y"
+                    }
+                    csvFileLocation = outputLocation.append("/").append(fileName);
+                    try (Writer outFile = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(csvFileLocation.toString())))) {
+                        outFile.append(data);
+                    }
+                }
+                ec.logger.info("CSV data:" +data)
+            </script>
+            <log message="CSV file prepared successfully."/>
+        </actions>
+    </service>
+    <service verb="get" noun="Products" authenticate="false" transaction-timeout="7200">
+        <description>Get products</description>
+        <in-parameters>
+            <parameter name="viewIndex" type="Integer" required="false"/>
+            <parameter name="viewSize" type="Integer" required="false"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="productDetail" type="Map"/>
+        </out-parameters>
+        <actions>
+            <script><![CDATA[
+                import org.moqui.context.ExecutionContext
+                import org.moqui.util.RestClient
+                ExecutionContext ec = context.ec
+
+                uri = "https://localhost:8443/api/solr-query"
+
+                // Construct the JSON structure
+                requestBody = [:]
+                productDetail = [:]
+                queryObject = [:]
+                params = [:]
+
+                queryObject.query = "*:*"
+                queryObject.filter = "docType:PRODUCT AND isVirtual:false"
+
+                params.fl = "productId,upc,tags,productFeatures";
+                params.rows = viewSize ? viewSize : 10
+                params.start = viewIndex ? viewIndex : 0
+
+                queryObject.params = params;
+                requestBody.json = queryObject
+
+                RestClient restClient = ec.service.rest().method("POST").uri(uri)
+                restClient.jsonObject(requestBody)
+
+                try {
+                    RestClient.RestResponse restResponse = restClient.call()
+
+                    if (restResponse.statusCode == 200) {
+                        responseMap = (Map) restResponse.jsonObject()
+                        productDetail.products = responseMap.response.docs
+                        productDetail.totalCount = responseMap.response.numFound
+                    } else {
+                        ec.message.addMessage("Server error on Solr server: ${restResponse.getReasonPhrase()}")
+                    }
+                } catch (Exception e) {
+                    ec.logger.log(ec.logger.ERROR_INT, "Error connecting to Solr server at ${restClient.getUri()?.toString()}", e)
+                    ec.message.addMessage("Error connecting to Solr server at ${restClient.getUri()?.toString()}: ${e.toString()}")
+                }
+            ]]></script>
+            <log message="${viewSize} products are fetched successfully from index ${viewIndex}."/>
+        </actions>
+    </service>
+
+    <service verb="build" noun="ruleTemplate">
+        <in-parameters>
+            <parameter name="ruleGroupId" type="String" required="true"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="ruleTemplateBytes"/>
+        </out-parameters>
+        <actions>
+            <set field="templateLocation" value="component://available-to-promise/drl/ProductThresholdRuleTemplate.drl.ftl"/>
+            <script>
+                Writer writer = new StringWriter()
+                ec.resourceFacade.template(templateLocation, writer)
+
+                ruleTemplateBytes = writer.toString().getBytes();
+                ec.logger.info("Rule Template:" +writer.toString())
+            </script>
+        </actions>
+    </service>
+</services>
