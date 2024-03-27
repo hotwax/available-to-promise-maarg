@@ -31,7 +31,7 @@
           </#list>
         </#if>
     </#if>
-    <#if !facilityIds?has_content>
+    <#if facilityIds?has_content>
       rule "${decisionRule.ruleId}"
       salience ${ruleCount}
       when
