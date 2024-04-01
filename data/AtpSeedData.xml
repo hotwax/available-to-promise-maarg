@@ -37,4 +37,10 @@
         <!-- Full permissions for the ADMIN user group -->
         <authz artifactAuthzId="ATP_API_ADMIN" userGroupId="ADMIN" authzTypeEnumId="AUTHZT_ALWAYS" authzActionEnumId="AUTHZA_ALL"/>
     </artifactGroups>
+
+    <moqui.service.message.SystemMessageType systemMessageTypeId="ExportProductThreshold" description="Export product threshold"/>
+    <moqui.service.message.SystemMessageRemote systemMessageRemoteId="RemoteSftp"
+                                               description="SFTP server connection details" sendUrl=""
+                                               username="" password=""/>
+
 </entity-facade-xml>

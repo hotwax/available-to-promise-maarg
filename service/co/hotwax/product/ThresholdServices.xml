@@ -40,11 +40,14 @@
                 productFacilityDetail = [:]
             </script>
 
-            <set field="viewSize" value="1000"/>
-            <set field="viewIndex" value="0"/>
+            <set field="viewSize" value="1000" type="Integer"/>
+            <set field="viewIndex" value="0" type="Integer"/>
             <service-call name="co.hotwax.product.ThresholdServices.get#Products"
                           in-map="[viewIndex: viewIndex, viewSize: viewSize]"
                           out-map="productResult"/>
+            <if condition="!productResult.productDetail">
+                <return error="true" message="No products found."/>
+            </if>
             <set field="products" from="productResult.productDetail.products"/>
             <set field="totalProducts" from="productResult.productDetail.totalCount"/>
 
@@ -59,7 +62,7 @@
                           in-map="[products: productFacilityDetail.values()]"
                           out-map="result"/>
             <!--The fileName will be used in subsequent calls in order to keep only one CSV file in a single run. So if fileName is passed, data get appended to the existing file-->
-            <set field="fileName" from="result.fileName"/>
+            <set field="csvFileLocation" from="result.csvFileLocation"/>
             <script>
                 import co.hotwax.common.CommerceUtil
                 paginationValues = CommerceUtil.getPaginationValues(viewSize, 0, totalProducts)
@@ -70,22 +73,26 @@
                 <service-call name="co.hotwax.product.ThresholdServices.get#Products"
                         in-map="[viewIndex: viewIndex*viewSize, viewSize: viewSize]"
                         out-map="productResult"/>
-                <set field="products" from="productResult.productDetail.products"/>
-                <iterate list="products" entry="product">
-                    <script>
-                        kieSession.setGlobal("productFacilityDetail", productFacilityDetail);
-                        kieSession.insert(product);
-                        int numberOfRulesFired = kieSession.fireAllRules();
-                    </script>
-                </iterate>
-                <service-call name="co.hotwax.product.ThresholdServices.prepare#ThresholdCsv"
-                        in-map="[products: productFacilityDetail.values(), fileName: fileName]"
-                        out-map="result"/>
+                <if condition="productResult.productDetail">
+                    <set field="products" from="productResult.productDetail.products"/>
+                    <iterate list="products" entry="product">
+                        <script>
+                            kieSession.setGlobal("productFacilityDetail", productFacilityDetail);
+                            kieSession.insert(product);
+                            int numberOfRulesFired = kieSession.fireAllRules();
+                        </script>
+                    </iterate>
+                    <service-call name="co.hotwax.product.ThresholdServices.prepare#ThresholdCsv"
+                            in-map="[products: productFacilityDetail.values(), csvFileLocation: csvFileLocation]"
+                            out-map="result"/>
+                </if>
             </iterate>
-
             <script>
                 kieSession.dispose();
             </script>
+            <!--<service-call name="co.hotwax.product.ThresholdServices.upload#ThresholdCsvToFtp" transaction="force-new"
+                    in-map="[filePath: csvFileLocation]"
+                    out-map="result"/>-->
 
             <log message="Threshold rules executed successfully for rule group [${ruleGroupId}]."/>
         </actions>
@@ -94,10 +101,10 @@
         <description>Prepare threshold csv.</description>
         <in-parameters>
             <parameter name="products" type="List" required="true"/>
-            <parameter name="fileName" type="String" required="false"/>
+            <parameter name="csvFileLocation" type="String" required="false"/>
         </in-parameters>
         <out-parameters>
-            <parameter name="fileName" type="String" required="true"/>
+            <parameter name="csvFileLocation" type="String" required="true"/>
         </out-parameters>
         <actions>
             <if condition="!products">
@@ -127,17 +134,16 @@
 
                 data = writer.toString()
                 if (data) {
-                    if (!fileName) {
+                    if (!csvFileLocation) {
                         fileName = new StringBuilder("PRODUCT_THRESHOLD_").append(ec.user.nowTimestamp).append(".csv");
+                        csvFileLocation = outputLocation.append("/").append(fileName).toString();
                     } else {
                         skipHeader = "Y"
                     }
-                    csvFileLocation = outputLocation.append("/").append(fileName);
-                    try (Writer outFile = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(csvFileLocation.toString())))) {
+                    try (Writer outFile = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(csvFileLocation)))) {
                         outFile.append(data);
                     }
                 }
-                ec.logger.info("CSV data:" +data)
             </script>
             <log message="CSV file prepared successfully."/>
         </actions>
@@ -168,7 +174,6 @@
                 queryObject.query = "*:*"
                 queryObject.filter = "docType:PRODUCT AND isVirtual:false"
 
-                params.fl = "productId,upc,tags,productFeatures";
                 params.rows = viewSize ? viewSize : 10
                 params.start = viewIndex ? viewIndex : 0
 
@@ -189,8 +194,9 @@
                         ec.message.addMessage("Server error on Solr server: ${restResponse.getReasonPhrase()}")
                     }
                 } catch (Exception e) {
-                    ec.logger.log(ec.logger.ERROR_INT, "Error connecting to Solr server at ${restClient.getUri()?.toString()}", e)
-                    ec.message.addMessage("Error connecting to Solr server at ${restClient.getUri()?.toString()}: ${e.toString()}")
+                    ec.logger.log(ec.logger.ERROR_INT, "Error calling request at ${restClient.getUri()?.toString()}", e)
+                    ec.message.addMessage("Error calling request at ${restClient.getUri()?.toString()}: ${e.toString()}")
+                    return
                 }
             ]]></script>
             <log message="${viewSize} products are fetched successfully from index ${viewIndex}."/>
@@ -213,6 +219,28 @@
                 ruleTemplateBytes = writer.toString().getBytes();
                 ec.logger.info("Rule Template:" +writer.toString())
             </script>
+        </actions>
+    </service>
+    <service verb="upload" noun="ThresholdCsvToFtp" authenticate="false" transaction-timeout="7200">
+        <description>Upload threshold csv.</description>
+        <in-parameters>
+            <parameter name="filePath" type="String" required="true"/>
+        </in-parameters>
+        <actions>
+            <if condition="!filePath">
+                <return error="No file path found."/>
+            </if>
+            <service-call name="create#moqui.service.message.SystemMessage" transaction="force-new"
+                          in-map="[systemMessageTypeId : 'ExportProductThreshold', systemMessageRemoteId: 'RemoteSftp', statusId:'', isOutgoing:'Y', messageText: filePath, initDate:ec.user.nowTimestamp]"
+                          out-map="result"/>
+            <set field="systemMessageId" from="result.systemMessageId"/>
+            <service-call name="co.hotwax.ofbiz.SystemMessageServices.send#SystemMessageFileSftp" transaction="force-new"
+                          in-map="[systemMessageId : systemMessageId]"
+                          out-map="result"/>
+            <service-call name="update#moqui.service.message.SystemMessage" transaction="force-new"
+                          in-map="[systemMessageId : systemMessageId, statusId: '']"
+                          out-map="result"/>
+            <log message="CSV file uploaded successfully."/>
         </actions>
     </service>
 </services>
