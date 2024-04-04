@@ -103,7 +103,7 @@
                     in-map="[ruleGroupId:ruleGroupId, productStoreId: productStoreId, startDate:ec.user.nowTimestamp]"
                     out-map="ruleGroupRunResult"/>
 
-            <service-call name="co.hotwax.product.ThresholdServices.run#ExportProductThreshold"
+            <service-call name="co.hotwax.product.ProductFacilityServices.run#ExportProductThreshold"
                     in-map="[ruleGroupId:ruleGroupId, productStoreId: productStoreId"
                     out-map="result"/>
             <script>
