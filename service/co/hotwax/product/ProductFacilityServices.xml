@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://moqui.org/xsd/service-definition-3.xsd">
 
-    <service verb="run" noun="ExportProductThreshold" authenticate="false" transaction-timeout="7200">
-        <description>Executes threshold rules.</description>
+    <service verb="run" noun="ExportProductFacilityDetail" authenticate="false" transaction-timeout="7200">
+        <description>Executes product facility rules.</description>
         <in-parameters>
             <parameter name="ruleGroupId" type="String" required="true"/>
             <parameter name="productStoreId" type="String" required="true"/>
@@ -58,7 +58,7 @@
                     int numberOfRulesFired = kieSession.fireAllRules();
                 </script>
             </iterate>
-            <service-call name="co.hotwax.product.ProductFacilityServices.prepare#ThresholdCsv"
+            <service-call name="co.hotwax.product.ProductFacilityServices.prepare#ProductFacilityCsv"
                           in-map="[products: productFacilityDetail.values()]"
                           out-map="result"/>
             <!--The fileName will be used in subsequent calls in order to keep only one CSV file in a single run. So if fileName is passed, data get appended to the existing file-->
@@ -82,7 +82,7 @@
                             int numberOfRulesFired = kieSession.fireAllRules();
                         </script>
                     </iterate>
-                    <service-call name="co.hotwax.product.ProductFacilityServices.prepare#ThresholdCsv"
+                    <service-call name="co.hotwax.product.ProductFacilityServices.prepare#ProductFacilityCsv"
                             in-map="[products: productFacilityDetail.values(), csvFileLocation: csvFileLocation]"
                             out-map="result"/>
                 </if>
@@ -90,15 +90,15 @@
             <script>
                 kieSession.dispose();
             </script>
-            <!--<service-call name="co.hotwax.product.ProductFacilityServices.upload#ThresholdCsvToFtp" transaction="force-new"
+            <!--<service-call name="co.hotwax.product.ProductFacilityServices.upload#ProductFacilityCsvToFtp" transaction="force-new"
                     in-map="[filePath: csvFileLocation]"
                     out-map="result"/>-->
 
-            <log message="Threshold rules executed successfully for rule group [${ruleGroupId}]."/>
+            <log message="Product facility rules executed successfully for rule group [${ruleGroupId}]."/>
         </actions>
     </service>
-    <service verb="prepare" noun="ThresholdCsv" authenticate="false" transaction-timeout="7200">
-        <description>Prepare threshold csv.</description>
+    <service verb="prepare" noun="ProductFacilityCsv" authenticate="false" transaction-timeout="7200">
+        <description>Prepare product facility csv.</description>
         <in-parameters>
             <parameter name="products" type="List" required="true"/>
             <parameter name="csvFileLocation" type="String" required="false"/>
@@ -221,8 +221,8 @@
             </script>
         </actions>
     </service>
-    <service verb="upload" noun="ThresholdCsvToFtp" authenticate="false" transaction-timeout="7200">
-        <description>Upload threshold csv.</description>
+    <service verb="upload" noun="ProductFacilityCsvToFtp" authenticate="false" transaction-timeout="7200">
+        <description>Upload product facility csv.</description>
         <in-parameters>
             <parameter name="filePath" type="String" required="true"/>
         </in-parameters>
@@ -231,7 +231,7 @@
                 <return error="No file path found."/>
             </if>
             <service-call name="create#moqui.service.message.SystemMessage" transaction="force-new"
-                          in-map="[systemMessageTypeId : 'ExportProductThreshold', systemMessageRemoteId: 'RemoteSftp', statusId:'', isOutgoing:'Y', messageText: filePath, initDate:ec.user.nowTimestamp]"
+                          in-map="[systemMessageTypeId : 'ExportProductFacilityDetail', systemMessageRemoteId: 'RemoteSftp', statusId:'', isOutgoing:'Y', messageText: filePath, initDate:ec.user.nowTimestamp]"
                           out-map="result"/>
             <set field="systemMessageId" from="result.systemMessageId"/>
             <service-call name="co.hotwax.ofbiz.SystemMessageServices.send#SystemMessageFileSftp" transaction="force-new"
