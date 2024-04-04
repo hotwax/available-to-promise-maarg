@@ -173,6 +173,7 @@
     <service verb="store" noun="RuleGroupSchedule">
         <in-parameters>
             <parameter name="ruleGroupId" required="true"/>
+            <parameter name="systemMessageRemoteId" required="true"/>
             <auto-parameters entity-name="moqui.service.job.ServiceJob" include="nonpk">
                 <exclude field-name="description"/>
                 <exclude field-name="serviceName"/>
