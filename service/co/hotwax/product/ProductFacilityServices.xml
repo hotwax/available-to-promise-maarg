@@ -6,6 +6,7 @@
         <in-parameters>
             <parameter name="ruleGroupId" type="String" required="true"/>
             <parameter name="productStoreId" type="String" required="true"/>
+            <parameter name="systemMessageRemoteId" type="String" required="true"/>
         </in-parameters>
         <actions>
             <entity-find-one entity-name="co.hotwax.common.RuleGroup" value-field="ruleGroup">
@@ -59,10 +60,10 @@
                 </script>
             </iterate>
             <service-call name="co.hotwax.product.ProductFacilityServices.prepare#ProductFacilityCsv"
-                          in-map="[products: productFacilityDetail.values()]"
+                          in-map="[products: productFacilityDetail.values(), systemMessageTypeId: 'ExportProductFacilityDetail']"
                           out-map="result"/>
             <!--The fileName will be used in subsequent calls in order to keep only one CSV file in a single run. So if fileName is passed, data get appended to the existing file-->
-            <set field="csvFileLocation" from="result.csvFileLocation"/>
+            <set field="csvFilePath" from="result.csvFilePath"/>
             <script>
                 import co.hotwax.common.CommerceUtil
                 paginationValues = CommerceUtil.getPaginationValues(viewSize, 0, totalProducts)
@@ -83,16 +84,16 @@
                         </script>
                     </iterate>
                     <service-call name="co.hotwax.product.ProductFacilityServices.prepare#ProductFacilityCsv"
-                            in-map="[products: productFacilityDetail.values(), csvFileLocation: csvFileLocation]"
+                            in-map="[products: productFacilityDetail.values(), systemMessageTypeId: 'ExportProductFacilityDetail', csvFilePath: csvFilePath]"
                             out-map="result"/>
                 </if>
             </iterate>
             <script>
                 kieSession.dispose();
             </script>
-            <!--<service-call name="co.hotwax.product.ProductFacilityServices.upload#ProductFacilityCsvToFtp" transaction="force-new"
-                    in-map="[filePath: csvFileLocation]"
-                    out-map="result"/>-->
+            <service-call name="co.hotwax.product.ProductFacilityServices.upload#ProductFacilityCsvToFtp" transaction="force-new"
+                    in-map="[filePath: csvFilePath, systemMessageRemoteId: systemMessageRemoteId]"
+                    out-map="result"/>
 
             <log message="Product facility rules executed successfully for rule group [${ruleGroupId}]."/>
         </actions>
@@ -101,46 +102,44 @@
         <description>Prepare product facility csv.</description>
         <in-parameters>
             <parameter name="products" type="List" required="true"/>
-            <parameter name="csvFileLocation" type="String" required="false"/>
+            <parameter name="csvFilePath" type="String" required="false"/>
+            <parameter name="systemMessageTypeId" required="true">
+                <description>The System Message Type ID for generating product facility csv.</description>
+            </parameter>
         </in-parameters>
         <out-parameters>
-            <parameter name="csvFileLocation" type="String" required="true"/>
+            <parameter name="csvFilePath" type="String" required="true"/>
         </out-parameters>
         <actions>
             <if condition="!products">
                 <return error="No products found."/>
             </if>
-            <!--Need to find some config location to set this-->
-            <set field="fileLocation" value="runtime/component/available-to-proimse/dataDir"/>
+            <set field="nowDate" from="ec.user.nowTimestamp"/>
+            <set field="skipHeader" value="Y"/>
+
+            <!-- Fetch the receivePath from SystemMessageType to prepare the path for creating the file in the receiving system. Ex: Moqui's datamanager directory in runtime.-->
+            <entity-find-one entity-name="moqui.service.message.SystemMessageType" value-field="systemMessageType"/>
+
+            <if condition="!csvFilePath">
+                <set field="csvFilePathRef" from="ec.resource.expand(systemMessageType.receivePath, null,
+                        [contentRoot: ec.user.getPreference('mantle.content.root') ?: 'dbresource://datamanager', dateTime:ec.l10n.format(nowDate, 'yyyy-MM-dd-HH-mm-ss-SSS')], false)"/>
+                <set field="csvFilePath" from="ec.resource.getLocationReference(csvFilePathRef).getUri().getPath()"/>
+                <set field="skipHeader" value="N"/>
+            </if>
+
             <set field="csvTemplateLocation" value="component://available-to-promise/template/ExportProductFacility.csv.ftl"/>
 
-            <!--flag to include/exclude csv header if updating/writing the csv-->
-            <set field="skipHeader" value="N"/>
+            <!--flag to include/exclude csv header if writing first time or appending the content in the existing file-->
             <script>
-                StringBuilder outputLocation = new StringBuilder();
-                outputLocation.append(fileLocation);
-                outputDir = new File(outputLocation.toString());
-                if (!outputDir.exists()) {
-                    boolean created = outputDir.mkdirs();
-                    if (!created) {
-                        ec.logger.error("Directory not created.")
-                        ec.message.addError("Directory not created.")
-                        return
-                    }
-                }
+                File productFacilityDetailFile = new File(csvFilePath)
+                if (!productFacilityDetailFile.parentFile.exists()) productFacilityDetailFile.parentFile.mkdirs()
 
                 Writer writer = new StringWriter()
                 ec.resourceFacade.template(csvTemplateLocation, writer)
 
                 data = writer.toString()
                 if (data) {
-                    if (!csvFileLocation) {
-                        fileName = new StringBuilder("PRODUCT_THRESHOLD_").append(ec.user.nowTimestamp).append(".csv");
-                        csvFileLocation = outputLocation.append("/").append(fileName).toString();
-                    } else {
-                        skipHeader = "Y"
-                    }
-                    try (Writer outFile = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(csvFileLocation)))) {
+                    try (Writer outFile = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(csvFilePath)))) {
                         outFile.append(data);
                     }
                 }
@@ -151,6 +150,8 @@
     <service verb="get" noun="Products" authenticate="false" transaction-timeout="7200">
         <description>Get products</description>
         <in-parameters>
+            <parameter name="query" type="String" required="false"/>
+            <parameter name="filter" type="String" required="false"/>
             <parameter name="viewIndex" type="Integer" required="false"/>
             <parameter name="viewSize" type="Integer" required="false"/>
         </in-parameters>
@@ -166,22 +167,17 @@
                 uri = "https://localhost:8443/api/solr-query"
 
                 // Construct the JSON structure
-                requestBody = [:]
                 productDetail = [:]
-                queryObject = [:]
-                params = [:]
 
-                queryObject.query = "*:*"
-                queryObject.filter = "docType:PRODUCT AND isVirtual:false"
-
-                params.rows = viewSize ? viewSize : 10
-                params.start = viewIndex ? viewIndex : 0
-
-                queryObject.params = params;
-                requestBody.json = queryObject
+                filterConditions = new StringBuilder()
+                filterConditions.append("docType:PRODUCT AND isVirtual:false")
+                if (filter) {
+                    filterConditions.append(" AND " + filter)
+                }
+                queryObject = [query: query ?: "*:*", filter: filterConditions.toString(), params: [rows: viewSize ?: 10, start: viewIndex ?: 0]]
 
                 RestClient restClient = ec.service.rest().method("POST").uri(uri)
-                restClient.jsonObject(requestBody)
+                restClient.jsonObject([json: queryObject])
 
                 try {
                     RestClient.RestResponse restResponse = restClient.call()
@@ -224,14 +220,19 @@
     <service verb="upload" noun="ProductFacilityCsvToFtp" authenticate="false" transaction-timeout="7200">
         <description>Upload product facility csv.</description>
         <in-parameters>
-            <parameter name="filePath" type="String" required="true"/>
+            <parameter name="systemMessageRemoteId" required="true">
+                <description>The System Message Remote ID to upload product facility csv to ftp location.</description>
+            </parameter>
+            <parameter name="filePath" type="String" required="true">
+                <description>The path of csv file to upload.</description>
+            </parameter>
         </in-parameters>
         <actions>
             <if condition="!filePath">
                 <return error="No file path found."/>
             </if>
             <service-call name="create#moqui.service.message.SystemMessage" transaction="force-new"
-                          in-map="[systemMessageTypeId : 'ExportProductFacilityDetail', systemMessageRemoteId: 'RemoteSftp', statusId:'', isOutgoing:'Y', messageText: filePath, initDate:ec.user.nowTimestamp]"
+                          in-map="[systemMessageTypeId : 'ExportProductFacilityDetail', systemMessageRemoteId: systemMessageRemoteId, statusId:'', isOutgoing:'Y', messageText: filePath, initDate:ec.user.nowTimestamp]"
                           out-map="result"/>
             <set field="systemMessageId" from="result.systemMessageId"/>
             <service-call name="co.hotwax.ofbiz.SystemMessageServices.send#SystemMessageFileSftp" transaction="force-new"

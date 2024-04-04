@@ -50,6 +50,7 @@
         <in-parameters>
             <parameter name="ruleGroupId" required="true"/>
             <parameter name="productStoreId" required="true"/>
+            <parameter name="systemMessageRemoteId" required="true"/>
             <parameter name="forceRun" type="Boolean" default-value="false"/>
             <!--
             In order to leverage the Service semaphore capabilities provided by the framework, we have chosen to include productStoreId as an input parameter.
@@ -104,7 +105,7 @@
                     out-map="ruleGroupRunResult"/>
 
             <service-call name="co.hotwax.product.ProductFacilityServices.run#ExportProductFacilityDetail"
-                    in-map="[ruleGroupId:ruleGroupId, productStoreId: productStoreId"
+                    in-map="[ruleGroupId:ruleGroupId, productStoreId: productStoreId, systemMessageRemoteId: systemMessageRemoteId]"
                     out-map="result"/>
             <script>
                 def ruleGroupRunResult = null
@@ -205,7 +206,7 @@
                 </entity-find-one>
             </if>
             <set field="description" value="Service job for rule group ${ruleGroup.groupName} [${ruleGroup.ruleGroupId}]"/>
-            <set field="serviceName" value="co.hotwax.product.AtpServices.run#RuleGroup"/>
+            <set field="serviceName" value="co.hotwax.common.DecisionRuleServices.run#RuleGroup"/>
             <if condition="!serviceJob">
                 <if condition="!paused">
                     <set field="paused" value="N"/>

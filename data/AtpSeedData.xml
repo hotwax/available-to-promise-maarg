@@ -38,9 +38,14 @@
         <authz artifactAuthzId="ATP_API_ADMIN" userGroupId="ADMIN" authzTypeEnumId="AUTHZT_ALWAYS" authzActionEnumId="AUTHZA_ALL"/>
     </artifactGroups>
 
-    <moqui.service.message.SystemMessageType systemMessageTypeId="ExportProductThreshold" description="Export product threshold"/>
-    <moqui.service.message.SystemMessageRemote systemMessageRemoteId="RemoteSftp"
-                                               description="SFTP server connection details" sendUrl=""
-                                               username="" password=""/>
 
+    <!-- Using below config for preparing file path
+    <moqui.basic.Enumeration enumId="mantle.content.root" description="Mantle Content Root Loc" enumTypeId="UserPreferenceKey"/>
+    <moqui.security.UserGroupPreference userGroupId="ALL_USERS" preferenceKey="mantle.content.root"
+                                        preferenceValue="runtime://datamanager"/>-->
+    <moqui.service.message.SystemMessageType systemMessageTypeId="ExportProductFacilityDetail"
+            description="Export product facility detail"
+            sendPath="/home/${sftpUsername}/hotwax/available-to-promise/PRODUCT_FACILITY_${dateTime}.csv"
+            sendServiceName="co.hotwax.ofbiz.SystemMessageServices.send#SystemMessageFileSftp"
+            receivePath="${contentRoot}/hotwax/available-to-promise/PRODUCT_FACILITY_${dateTime}.csv"/>
 </entity-facade-xml>
