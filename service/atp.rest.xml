@@ -76,8 +76,8 @@
                 <method type="get"><entity name="co.hotwax.common.DecisionRule" operation="list"/></method>
             </resource>
             <resource name="schedule">
-                <method type="get"><service name="co.hotwax.order.routing.OrderRoutingServices.get#OrderRoutingGroupSchedule"/></method>
-                <method type="post"><service name="co.hotwax.order.routing.OrderRoutingServices.store#OrderRoutingGroupSchedule"/></method>
+                <method type="get"><service name="co.hotwax.common.DecisionRuleServices.get#RuleGroupSchedule"/></method>
+                <method type="post"><service name="co.hotwax.common.DecisionRuleServices.store#RuleGroupSchedule"/></method>
             </resource>
             <resource name="ruleGroupRuns">
                 <method type="get"><entity name="co.hotwax.common.RuleGroupRun" operation="list"/></method>
