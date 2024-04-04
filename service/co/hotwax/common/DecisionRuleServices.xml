@@ -224,6 +224,7 @@
                  -->
                 <service-call name="create#moqui.service.job.ServiceJobParameter" in-map="[jobName: jobName, parameterName: 'ruleGroupId', parameterValue: ruleGroupId]"/>
                 <service-call name="create#moqui.service.job.ServiceJobParameter" in-map="[jobName: jobName, parameterName: 'productStoreId', parameterValue: ruleGroup.productStoreId]"/>
+                <service-call name="create#moqui.service.job.ServiceJobParameter" in-map="[jobName: jobName, parameterName: 'systemMessageRemoteId', parameterValue: systemMessageRemoteId]"/>
                 <return message="Rule group schedule has been created successfully."/>
                 <else>
                     <service-call name="update#moqui.service.job.ServiceJob" in-map="context + [jobName: serviceJob.jobName]" out-map="context"/>
