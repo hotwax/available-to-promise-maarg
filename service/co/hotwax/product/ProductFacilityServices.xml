@@ -159,12 +159,26 @@
             <parameter name="productDetail" type="Map"/>
         </out-parameters>
         <actions>
+            <script>
+                omsBaseUrl = co.hotwax.common.DecisionRuleHelper.getOmsInstanceUrl(ec.ecfi);
+                token = co.hotwax.common.DecisionRuleHelper.getOmsJwtToken(ec.ecfi);
+            </script>
+            <if condition="!token">
+                <return error="true" message="Unable to generate oms token, check JWT configuration"/>
+            </if>
+            <if condition="!omsBaseUrl">
+                <return error="true" message="OMS base url not found"/>
+            </if>
+
             <script><![CDATA[
                 import org.moqui.context.ExecutionContext
                 import org.moqui.util.RestClient
                 ExecutionContext ec = context.ec
 
-                uri = "https://localhost:8443/api/solr-query"
+                endPointUri = new StringBuilder()
+                endPointUri.append(omsBaseUrl)
+                endPointUri.append("/api/solr-query?token=")
+                endPointUri.append(token)
 
                 // Construct the JSON structure
                 productDetail = [:]
@@ -176,7 +190,7 @@
                 }
                 queryObject = [query: query ?: "*:*", filter: filterConditions.toString(), params: [rows: viewSize ?: 10, start: viewIndex ?: 0]]
 
-                RestClient restClient = ec.service.rest().method("POST").uri(uri)
+                RestClient restClient = ec.service.rest().method("POST").uri(endPointUri.toString())
                 restClient.jsonObject([json: queryObject])
 
                 try {

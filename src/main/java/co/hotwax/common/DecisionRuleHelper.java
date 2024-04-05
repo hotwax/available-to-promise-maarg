@@ -3,12 +3,12 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.algorithms.Algorithm;
 import org.moqui.entity.EntityCondition;
+import org.moqui.entity.EntityValue;
 import org.moqui.impl.context.ExecutionContextFactoryImpl;
 import org.moqui.impl.entity.EntityConditionFactoryImpl;
 import org.moqui.util.SystemBinding;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.moqui.entity.EntityValue;
 
 import javax.cache.Cache;
 import java.time.Instant;
@@ -124,5 +124,30 @@ public class DecisionRuleHelper {
         }
         // TODO: any other useful types to convert?
         return value;
+    }
+
+    public static String getOmsJwtToken(ExecutionContextFactoryImpl ecfi) {
+        //TODO: For now just hardcode the SystemMessageRemote, need to find a better way to do this
+        EntityValue tokenSysMessage = ecfi.entityFacade.find("moqui.service.message.SystemMessageRemote")
+                .condition("systemMessageRemoteId", "HC_OMS_CONFIG").useCache(true).disableAuthz().one();
+        if (tokenSysMessage != null) {
+            return tokenSysMessage.getString("remotePublicKey");
+        }
+        return null;
+    }
+    public static String getOmsInstanceUrl(ExecutionContextFactoryImpl ecfi) {
+        //TODO: For now just hardcode the SystemMessageRemote, need to find a better way to do this
+        EntityValue omsInstance = ecfi.entityFacade.find("moqui.service.message.SystemMessageRemote")
+                .condition("systemMessageRemoteId", "HC_OMS_CONFIG").useCache(true).disableAuthz().one();
+        if (omsInstance != null) {
+            return omsInstance.getString("sendUrl");
+        } else {
+            EntityValue omsInstanceProperty = ecfi.entityFacade.find("org.apache.ofbiz.common.property.SystemProperty")
+                    .condition("systemResourceId", "url").condition("systemPropertyId" , "content.url.prefix.secure").useCache(true).disableAuthz().one();
+            if (omsInstanceProperty != null) {
+                return omsInstanceProperty.getString("systemPropertyValue");
+            }
+        }
+        return null;
     }
 }
