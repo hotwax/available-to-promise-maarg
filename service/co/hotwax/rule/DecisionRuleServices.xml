@@ -9,12 +9,20 @@
             <script>
                 import org.moqui.context.ExecutionContext
                 import org.moqui.entity.EntityCondition
+                import org.moqui.entity.EntityListIterator
+
                 ExecutionContext ec = context.ec
                 Calendar basisCal = ec.user.getCalendarSafe()
                 basisCal.add(Calendar.DAY_OF_YEAR, (int) - daysToKeep)
                 basisTimestamp = new Timestamp(basisCal.getTimeInMillis())
-                recordsRemoved = ec.entity.find("moqui.service.job.ServiceJobRun")
-                        .condition("startTime", EntityCondition.LESS_THAN, basisTimestamp).disableAuthz().deleteAll()
+                serviceJobRunFind = ec.entity.find("moqui.service.job.ServiceJobRun")
+                        .condition("startTime", EntityCondition.LESS_THAN, basisTimestamp).disableAuthz()
+
+                try (EntityListIterator eli = serviceJobRunFind.iterator()) {
+                    while ((serviceJobRun = eli.next()) != null) {
+                        serviceJobRun.delete()
+                    }
+                }
             </script>
             <log message="Removed ${recordsRemoved} RuleGroupRun records."/>
         </actions>
