@@ -46,8 +46,8 @@ under the License.
         <alias entity-alias="FT" name="parentFacilityTypeId" field="parentTypeId"/>
     </view-entity>
     <view-entity entity-name="DecisionRuleAndCondition" package="co.hotwax.common">
-        <member-entity entity-alias="DR" entity-name="co.hotwax.common.DecisionRule"/>
-        <member-entity entity-alias="RC" entity-name="co.hotwax.common.RuleCondition" join-from-alias="DR">
+        <member-entity entity-alias="DR" entity-name="co.hotwax.rule.DecisionRule"/>
+        <member-entity entity-alias="RC" entity-name="co.hotwax.rule.RuleCondition" join-from-alias="DR">
             <key-map field-name="ruleId"/>
         </member-entity>
         <alias-all entity-alias="DR"/>

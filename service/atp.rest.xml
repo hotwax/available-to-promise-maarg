@@ -68,32 +68,32 @@
         </id>
     </resource>
     <resource name="ruleGroups">
-        <method type="post"><entity name="co.hotwax.common.RuleGroup" operation="store"/></method>
+        <method type="post"><entity name="co.hotwax.rule.RuleGroup" operation="store"/></method>
         <id name="ruleGroupId">
-            <method type="get"><entity name="co.hotwax.common.RuleGroup" operation="one" masterName="default"/></method>
-            <method type="post"><entity name="co.hotwax.common.RuleGroup" operation="store" masterName="default"/></method>
+            <method type="get"><entity name="co.hotwax.rule.RuleGroup" operation="one" masterName="default"/></method>
+            <method type="post"><entity name="co.hotwax.rule.RuleGroup" operation="store" masterName="default"/></method>
             <resource name="rules">
-                <method type="get"><entity name="co.hotwax.common.DecisionRule" operation="list"/></method>
+                <method type="get"><entity name="co.hotwax.rule.DecisionRule" operation="list"/></method>
             </resource>
             <resource name="schedule">
-                <method type="get"><service name="co.hotwax.common.DecisionRuleServices.get#RuleGroupSchedule"/></method>
-                <method type="post"><service name="co.hotwax.common.DecisionRuleServices.store#RuleGroupSchedule"/></method>
+                <method type="get"><service name="co.hotwax.rule.DecisionRuleServices.get#RuleGroupSchedule"/></method>
+                <method type="post"><service name="co.hotwax.rule.DecisionRuleServices.store#RuleGroupSchedule"/></method>
             </resource>
             <resource name="ruleGroupRuns">
-                <method type="get"><entity name="co.hotwax.common.RuleGroupRun" operation="list"/></method>
+                <method type="get"><entity name="co.hotwax.rule.RuleGroupRun" operation="list"/></method>
             </resource>
         </id>
     </resource>
     <resource name="decisionRules">
-        <method type="post"><entity name="co.hotwax.common.DecisionRule" operation="store"/></method>
+        <method type="post"><entity name="co.hotwax.rule.DecisionRule" operation="store"/></method>
         <id name="ruleId">
-            <method type="get"><entity name="co.hotwax.common.DecisionRule" operation="one" masterName="default"/></method>
-            <method type="post"><entity name="co.hotwax.common.DecisionRule" operation="store" masterName="default"/></method>
+            <method type="get"><entity name="co.hotwax.rule.DecisionRule" operation="one" masterName="default"/></method>
+            <method type="post"><entity name="co.hotwax.rule.DecisionRule" operation="store" masterName="default"/></method>
             <resource name="conditions">
-                <method type="delete"><entity name="co.hotwax.common.RuleCondition" operation="delete"/></method>
+                <method type="delete"><entity name="co.hotwax.rule.RuleCondition" operation="delete"/></method>
             </resource>
             <resource name="actions">
-                <method type="delete"><entity name="co.hotwax.common.RuleAction" operation="delete"/></method>
+                <method type="delete"><entity name="co.hotwax.rule.RuleAction" operation="delete"/></method>
             </resource>
         </id>
     </resource>

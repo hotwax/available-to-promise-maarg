@@ -9,7 +9,7 @@
             <parameter name="systemMessageRemoteId" type="String" required="true"/>
         </in-parameters>
         <actions>
-            <entity-find-one entity-name="co.hotwax.common.RuleGroup" value-field="ruleGroup">
+            <entity-find-one entity-name="co.hotwax.rule.RuleGroup" value-field="ruleGroup">
                 <field-map field-name="ruleGroupId" from="ruleGroupId"/>
                 <field-map field-name="productStoreId" from="productStoreId"/>
             </entity-find-one>

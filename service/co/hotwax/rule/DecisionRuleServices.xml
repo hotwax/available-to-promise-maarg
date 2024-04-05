@@ -27,7 +27,7 @@
             <parameter name="jobRunId"/>
         </out-parameters>
         <actions>
-            <entity-find-one entity-name="co.hotwax.common.RuleGroup" value-field="ruleGroup"/>
+            <entity-find-one entity-name="co.hotwax.rule.RuleGroup" value-field="ruleGroup"/>
             <if condition="!ruleGroup">
                 <return error="true" message="Rule group not found for ruleGroupId [${ruleGroupId}]."/>
             </if>
@@ -66,7 +66,7 @@
             <!--
                 validate the rule group and product store association
             -->
-            <entity-find-one entity-name="co.hotwax.common.RuleGroup" value-field="ruleGroup"/>
+            <entity-find-one entity-name="co.hotwax.rule.RuleGroup" value-field="ruleGroup"/>
             <if condition="!ruleGroup">
                 <return error="true" message="Rule group not found for ${ruleGroupId}"/>
             </if>
@@ -77,7 +77,7 @@
                 <return error="true" message="Rule group ${ruleGroup.groupName} [${ruleGroupId}] is not associated with productStoreId [${productStoreId}]."/>
             </if>
             <!--TODO: Need to check if we really want to add below check, as we are using service semaphore to avoid simultaneous run -->
-            <entity-find entity-name="co.hotwax.common.RuleGroupRun" list="ruleGroupRuns">
+            <entity-find entity-name="co.hotwax.rule.RuleGroupRun" list="ruleGroupRuns">
                 <econditions>
                     <econdition field-name="productStoreId" from="ruleGroup.productStoreId"/>
                     <econdition field-name="endDate" from="null"/>
@@ -88,7 +88,7 @@
             <!-- If a rule group run is in execution, don't run the rule -->
             <if condition="ruleGroupRun">
                 <if condition="forceRun">
-                    <service-call name="update#co.hotwax.common.RuleGroupRun" transaction="force-new" ignore-error="true"
+                    <service-call name="update#co.hotwax.rule.RuleGroupRun" transaction="force-new" ignore-error="true"
                                   in-map="[ruleGroupRunId:ruleGroupRun.ruleGroupRunId,hasError:'Y',
                                           ruleGroupRunResult:'Start a new force rule group run, bringing the current rule group run to an end',
                                           endDate:ec.user.nowTimestamp]"
@@ -100,7 +100,7 @@
                 </if>
 
             </if>
-            <service-call name="create#co.hotwax.common.RuleGroupRun" transaction="force-new" ignore-error="true"
+            <service-call name="create#co.hotwax.rule.RuleGroupRun" transaction="force-new" ignore-error="true"
                     in-map="[ruleGroupId:ruleGroupId, productStoreId: productStoreId, startDate:ec.user.nowTimestamp]"
                     out-map="ruleGroupRunResult"/>
 
@@ -122,7 +122,7 @@
                 ec.message.clearAll();
             </script>
 
-            <service-call name="update#co.hotwax.common.RuleGroupRun" transaction="force-new" ignore-error="true"
+            <service-call name="update#co.hotwax.rule.RuleGroupRun" transaction="force-new" ignore-error="true"
                     in-map="[ruleGroupRunId:ruleGroupRunResult.ruleGroupRunId, ruleGroupRunResult:ruleGroupRunResult, hasError:hasError, endDate:ec.user.nowTimestamp]"
                     out-map="ruleGroupRunResult"/>
 
@@ -141,7 +141,7 @@
             </parameter>
         </out-parameters>
         <actions>
-            <entity-find-one entity-name="co.hotwax.common.RuleGroup" value-field="ruleGroup"/>
+            <entity-find-one entity-name="co.hotwax.rule.RuleGroup" value-field="ruleGroup"/>
             <if condition="!ruleGroup">
                 <return error="true" message="RuleGroup not found for specified ruleGroupId [${ruleGroupId}]."/>
             </if>
@@ -183,7 +183,7 @@
             <parameter name="jobName"/>
         </out-parameters>
         <actions>
-            <entity-find-one entity-name="co.hotwax.common.RuleGroup" value-field="ruleGroup"/>
+            <entity-find-one entity-name="co.hotwax.rule.RuleGroup" value-field="ruleGroup"/>
             <if condition="!ruleGroup">
                 <return error="true" message="RuleGroup not found for specified ruleGroupId [${ruleGroupId}]."/>
             </if>
@@ -207,7 +207,7 @@
                 </entity-find-one>
             </if>
             <set field="description" value="Service job for rule group ${ruleGroup.groupName} [${ruleGroup.ruleGroupId}]"/>
-            <set field="serviceName" value="co.hotwax.common.DecisionRuleServices.run#RuleGroup"/>
+            <set field="serviceName" value="co.hotwax.rule.DecisionRuleServices.run#RuleGroup"/>
             <if condition="!serviceJob">
                 <if condition="!paused">
                     <set field="paused" value="N"/>
@@ -216,7 +216,7 @@
                 <service-call name="create#moqui.service.job.ServiceJob" in-map="context + [jobName: jobName]" out-map="context"/>
                 <!-- Set the JobName in RuleGroup entity -->
                 <set field="ruleGroup.jobName" from="jobName"/>
-                <service-call name="update#co.hotwax.common.RuleGroup" in-map="[ruleGroupId:ruleGroupId, jobName: jobName]"/>
+                <service-call name="update#co.hotwax.rule.RuleGroup" in-map="[ruleGroupId:ruleGroupId, jobName: jobName]"/>
                 <!--
                     For rule group scheduling we need only two parameters
                     - productStoreId - This is to ensure only one rule group is in execution for an ProductStore

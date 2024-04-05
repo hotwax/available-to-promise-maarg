@@ -1,8 +1,8 @@
-<#assign decisionRules = ec.entity.find("co.hotwax.common.DecisionRule").condition("ruleGroupId", ruleGroupId).condition("statusId", "ATP_RULE_ACTIVE").orderBy("sequenceNum asc").list()!>
+<#assign decisionRules = ec.entity.find("co.hotwax.rule.DecisionRule").condition("ruleGroupId", ruleGroupId).condition("statusId", "ATP_RULE_ACTIVE").orderBy("sequenceNum asc").list()!>
 <#if decisionRules?has_content>
 
   <#-- Set the package and imports -->
-  package co.hotwax.product;
+  package co.hotwax.rule;
   dialect "mvel"
   import org.moqui.util.ContextStack;
   import java.math.BigDecimal;
@@ -12,16 +12,16 @@
 
   <#assign ruleCount = decisionRules?size>
   <#list decisionRules as decisionRule>
-    <#assign ruleActions = ec.entity.find("co.hotwax.common.RuleAction").condition("ruleId", decisionRule.ruleId).orderBy("sequenceNum asc").list()!>
-    <#assign ruleConditions = ec.entity.find("co.hotwax.common.RuleCondition").condition("ruleId", decisionRule.ruleId).condition("conditionTypeEnumId", "ENTCT_ATP_FILTER").orderBy("sequenceNum asc").list()!>
-    <#assign facilityConditions = ec.entity.find("co.hotwax.common.RuleCondition").condition("ruleId", decisionRule.ruleId).condition("conditionTypeEnumId", "ENTCT_ATP_FACILITIES").list()!>
+    <#assign ruleActions = ec.entity.find("co.hotwax.rule.RuleAction").condition("ruleId", decisionRule.ruleId).orderBy("sequenceNum asc").list()!>
+    <#assign ruleConditions = ec.entity.find("co.hotwax.rule.RuleCondition").condition("ruleId", decisionRule.ruleId).condition("conditionTypeEnumId", "ENTCT_ATP_FILTER").orderBy("sequenceNum asc").list()!>
+    <#assign facilityConditions = ec.entity.find("co.hotwax.rule.RuleCondition").condition("ruleId", decisionRule.ruleId).condition("conditionTypeEnumId", "ENTCT_ATP_FACILITIES").list()!>
     <#assign facilityIds = []/>
     <#if facilityConditions?has_content>
       <#assign facilityCondition = facilityConditions?first/>
       <#assign facilityIds = Static["co.hotwax.common.DecisionRuleHelper"].valueToCollection(facilityCondition.fieldValue)/>
     </#if>
     <#if !facilityIds?has_content>
-      <#assign facilityGroupConditions = ec.entity.find("co.hotwax.common.RuleCondition").condition("ruleId", decisionRule.ruleId).condition("conditionTypeEnumId", "ENTCT_ATP_FAC_GROUPS").list()!>
+      <#assign facilityGroupConditions = ec.entity.find("co.hotwax.rule.RuleCondition").condition("ruleId", decisionRule.ruleId).condition("conditionTypeEnumId", "ENTCT_ATP_FAC_GROUPS").list()!>
         <#if facilityGroupConditions?has_content>
           <#assign facilityGroupCondition = facilityGroupConditions?first/>
           <#assign facilityGroupIds = Static["co.hotwax.common.DecisionRuleHelper"].valueToCollection(facilityGroupCondition.fieldValue)>
