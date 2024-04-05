@@ -232,14 +232,14 @@
                 <return error="No file path found."/>
             </if>
             <service-call name="create#moqui.service.message.SystemMessage" transaction="force-new"
-                          in-map="[systemMessageTypeId : 'ExportProductFacilityDetail', systemMessageRemoteId: systemMessageRemoteId, statusId:'', isOutgoing:'Y', messageText: filePath, initDate:ec.user.nowTimestamp]"
+                          in-map="[systemMessageTypeId : 'ExportProductFacilityDetail', systemMessageRemoteId: systemMessageRemoteId, statusId:'SmsgProduced', isOutgoing:'Y', messageText: filePath, initDate:ec.user.nowTimestamp]"
                           out-map="result"/>
             <set field="systemMessageId" from="result.systemMessageId"/>
             <service-call name="co.hotwax.ofbiz.SystemMessageServices.send#SystemMessageFileSftp" transaction="force-new"
                           in-map="[systemMessageId : systemMessageId]"
                           out-map="result"/>
             <service-call name="update#moqui.service.message.SystemMessage" transaction="force-new"
-                          in-map="[systemMessageId : systemMessageId, statusId: '']"
+                          in-map="[systemMessageId : systemMessageId, statusId: 'SmsgSent']"
                           out-map="result"/>
             <log message="CSV file uploaded successfully."/>
         </actions>
