@@ -27,11 +27,6 @@
                 <method type="get"><entity name="co.hotwax.facility.ProductStoreAndFacilityGroup" operation="list"/></method>
             </resource>
             <resource name="facilities">
-                <resource name="types">
-                    <resource name="facilityTypeId">
-                        <method type="get"><entity name="co.hotwax.product.store.ProductStoreFacilityDetail" operation="list"/></method>
-                    </resource>
-                </resource>
                 <method type="get"><entity name="co.hotwax.product.store.ProductStoreFacilityDetail" operation="list"/></method>
             </resource>
         </id>
@@ -50,6 +45,16 @@
         <id name="facilityId">
             <method type="get"><entity name="co.hotwax.facility.FacilityAndType" operation="one"/></method>
         </id>
+    </resource>
+    <resource name="products" description="Get the products">
+        <id name="productId">
+            <resource name="tags">
+                <method type="get"><entity name="org.apache.ofbiz.product.product.ProductKeyword" operation="list"/></method>
+            </resource>
+        </id>
+        <resource name="features">
+            <method type="get"><entity name="co.hotwax.product.feature.ProductFeatureAndType" operation="list"/></method>
+        </resource>
     </resource>
     <resource name="checkOmsConnection">
         <method type="get"><service name="co.hotwax.common.CommonServices.checkOmsConnection"/></method>

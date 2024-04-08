@@ -55,4 +55,14 @@ under the License.
             <exclude field="ruleId"/>
         </alias-all>
     </view-entity>
+
+    <view-entity entity-name="ProductFeatureAndType" package="co.hotwax.product.feature">
+        <member-entity entity-alias="PF" entity-name="org.apache.ofbiz.product.feature.ProductFeature"/>
+        <member-entity entity-alias="PFT" entity-name="org.apache.ofbiz.product.feature.ProductFeatureType" join-from-alias="PF">
+            <key-map field-name="productFeatureTypeId"/>
+        </member-entity>
+
+        <alias-all entity-alias="PF"/>
+        <alias entity-alias="PFT" name="featureTypeDescription" field="description"/>
+    </view-entity>
 </entities>
