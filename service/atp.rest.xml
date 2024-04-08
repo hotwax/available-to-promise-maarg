@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://moqui.org/xsd/rest-api-3.xsd"
+          name="available-to-promise" displayName="Commerce Available to Promise REST API" version="${moqui_version}"
+          description="">
+
+    <resource name="login" require-authentication="anonymous-all">
+        <method type="post"><service name="co.hotwax.common.CommonServices.login#User"/></method>
+    </resource>
+    <resource name="user">
+        <resource name="profile">
+            <method type="get"><service name="co.hotwax.common.CommonServices.getUserProfile"/></method>
+        </resource>
+        <resource name="getAvailableTimeZones">
+            <method type="get"><service name="co.hotwax.common.CommonServices.getAvailableTimeZones"/></method>
+        </resource>
+        <resource name="productStore">
+            <!--
+                TODO: Need to get the User's ProductStore, as of now returing all the productStore
+                As UserAccount and ProductStore are part of two different datasource
+             -->
+            <method type="get"><entity name="org.apache.ofbiz.product.store.ProductStore" operation="list"/></method>
+        </resource>
+    </resource>
+    <resource name="productStores">
+        <id name="productStoreId">
+            <resource name="facilityGroups">
+                <method type="get"><entity name="co.hotwax.facility.ProductStoreAndFacilityGroup" operation="list"/></method>
+            </resource>
+            <resource name="facilities">
+                <resource name="types">
+                    <resource name="facilityTypeId">
+                        <method type="get"><entity name="co.hotwax.product.store.ProductStoreFacilityDetail" operation="list"/></method>
+                    </resource>
+                </resource>
+                <method type="get"><entity name="co.hotwax.product.store.ProductStoreFacilityDetail" operation="list"/></method>
+            </resource>
+        </id>
+    </resource>
+    <resource name="status" description="Get the status items">
+        <method type="get"><entity name="co.hotwax.common.status.StatusItemAndType" operation="list"/></method>
+    </resource>
+    <resource name="enums" description="Get the enumerations">
+        <method type="get"><entity name="co.hotwax.common.enum.EnumerationAndType" operation="list"/></method>
+        <id name="enumId">
+            <method type="get"><entity name="co.hotwax.common.enum.EnumerationAndType" operation="one"/></method>
+        </id>
+    </resource>
+    <resource name="facilities" description="Get the facilities">
+        <method type="get"><entity name="co.hotwax.facility.FacilityAndType" operation="list"/></method>
+        <id name="facilityId">
+            <method type="get"><entity name="co.hotwax.facility.FacilityAndType" operation="one"/></method>
+        </id>
+    </resource>
+    <resource name="checkOmsConnection">
+        <method type="get"><service name="co.hotwax.common.CommonServices.checkOmsConnection"/></method>
+    </resource>
+    <resource name="serviceJobRuns">
+        <id name="jobName">
+            <method type="get"><entity name="moqui.service.job.ServiceJobRun" operation="list"/></method>
+            <id name="jobRunId">
+                <method type="get"><entity name="moqui.service.job.ServiceJobRun" operation="one"/></method>
+            </id>
+            <resource name="activeJobRun">
+                <method type="get">
+                    <entity name="moqui.service.job.ServiceJobRunLock" operation="one"/>
+                </method>
+            </resource>
+        </id>
+    </resource>
+    <resource name="ruleGroups">
+        <method type="post"><entity name="co.hotwax.rule.RuleGroup" operation="store"/></method>
+        <id name="ruleGroupId">
+            <method type="get"><entity name="co.hotwax.rule.RuleGroup" operation="one" masterName="default"/></method>
+            <method type="post"><entity name="co.hotwax.rule.RuleGroup" operation="store" masterName="default"/></method>
+            <resource name="rules">
+                <method type="get"><entity name="co.hotwax.rule.DecisionRule" operation="list"/></method>
+            </resource>
+            <resource name="schedule">
+                <method type="get"><service name="co.hotwax.rule.DecisionRuleServices.get#RuleGroupSchedule"/></method>
+                <method type="post"><service name="co.hotwax.rule.DecisionRuleServices.store#RuleGroupSchedule"/></method>
+            </resource>
+            <resource name="ruleGroupRuns">
+                <method type="get"><entity name="co.hotwax.rule.RuleGroupRun" operation="list"/></method>
+            </resource>
+        </id>
+    </resource>
+    <resource name="decisionRules">
+        <method type="post"><entity name="co.hotwax.rule.DecisionRule" operation="store"/></method>
+        <id name="ruleId">
+            <method type="get"><entity name="co.hotwax.rule.DecisionRule" operation="one" masterName="default"/></method>
+            <method type="post"><entity name="co.hotwax.rule.DecisionRule" operation="store" masterName="default"/></method>
+            <resource name="conditions">
+                <method type="delete"><entity name="co.hotwax.rule.RuleCondition" operation="delete"/></method>
+            </resource>
+            <resource name="actions">
+                <method type="delete"><entity name="co.hotwax.rule.RuleAction" operation="delete"/></method>
+            </resource>
+        </id>
+    </resource>
+</resource>

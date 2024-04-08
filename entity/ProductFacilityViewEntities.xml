@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+
+<entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/entity-definition-3.xsd">
+
+    <view-entity entity-name="ProductStoreFacilityDetail" package="co.hotwax.product.store">
+        <member-entity entity-alias="PSF" entity-name="org.apache.ofbiz.product.store.ProductStoreFacility"/>
+        <member-entity entity-alias="PS" entity-name="org.apache.ofbiz.product.store.ProductStore" join-from-alias="PSF">
+            <key-map field-name="productStoreId"/>
+        </member-entity>
+        <member-entity entity-alias="FAC" entity-name="org.apache.ofbiz.product.facility.Facility" join-from-alias="PSF">
+            <key-map field-name="facilityId"/>
+        </member-entity>
+        <member-entity entity-alias="FT" entity-name="org.apache.ofbiz.product.facility.FacilityType" join-from-alias="FAC" join-optional="true">
+            <key-map field-name="facilityTypeId"/>
+        </member-entity>
+
+        <alias-all entity-alias="PSF"/>
+        <alias-all entity-alias="PS">
+            <exclude field="productStoreId"/>
+            <exclude field="externalId"/>
+        </alias-all>
+        <alias-all entity-alias="FAC">
+            <exclude field="facilityId"/>
+            <exclude field="productStoreId"/>
+        </alias-all>
+        <alias entity-alias="PS" name="storeExternalId" field="externalId"/>
+        <alias entity-alias="FT" name="parentFacilityTypeId" field="parentTypeId"/>
+    </view-entity>
+    <view-entity entity-name="DecisionRuleAndCondition" package="co.hotwax.common">
+        <member-entity entity-alias="DR" entity-name="co.hotwax.rule.DecisionRule"/>
+        <member-entity entity-alias="RC" entity-name="co.hotwax.rule.RuleCondition" join-from-alias="DR">
+            <key-map field-name="ruleId"/>
+        </member-entity>
+        <alias-all entity-alias="DR"/>
+        <alias-all entity-alias="RC">
+            <exclude field="ruleId"/>
+        </alias-all>
+    </view-entity>
+</entities>
