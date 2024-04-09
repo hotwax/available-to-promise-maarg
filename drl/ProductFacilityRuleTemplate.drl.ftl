@@ -22,12 +22,33 @@
     </#if>
     <#if !facilityIds?has_content>
       <#assign facilityGroupConditions = ec.entity.find("co.hotwax.rule.RuleCondition").condition("ruleId", decisionRule.ruleId).condition("conditionTypeEnumId", "ENTCT_ATP_FAC_GROUPS").list()!>
+        <#assign facilityGroupIds = []>
+        <#assign includedFacilityGroupIds = []>
+        <#assign excludedFacilityGroupIds = []>
         <#if facilityGroupConditions?has_content>
-          <#assign facilityGroupCondition = facilityGroupConditions?first/>
-          <#assign facilityGroupIds = Static["co.hotwax.common.DecisionRuleHelper"].valueToCollection(facilityGroupCondition.fieldValue)>
-          <#assign facilityGroupMembers = ec.entity.find("org.apache.ofbiz.product.facility.FacilityGroupMember").condition("facilityGroupId", "in", facilityGroupIds).list()!>
+          <#list facilityGroupConditions as facilityGroupCondition>
+            <#if "in" == facilityGroupCondition.operator>
+              <#assign includedFacilityGroupIds = includedFacilityGroupIds + Static["co.hotwax.common.DecisionRuleHelper"].valueToCollection(facilityGroupCondition.fieldValue)/>
+            <#elseif "not-in" == facilityGroupCondition.operator>
+              <#assign excludedFacilityGroupIds = excludedFacilityGroupIds + Static["co.hotwax.common.DecisionRuleHelper"].valueToCollection(facilityGroupCondition.fieldValue)/>
+            </#if>
+          </#list>
+
+         <#assign includedFacilityIds = []>
+         <#assign excludedFacilityIds = []>
+          <#assign facilityGroupMembers = ec.entity.find("org.apache.ofbiz.product.facility.FacilityGroupMember").condition("facilityGroupId", "in", includedFacilityGroupIds).conditionDate("", "", ec.user.nowTimestamp).list()!>
           <#list facilityGroupMembers as facilityGroupMember>
-            <#assign facilityIds = facilityIds + [facilityGroupMember.facilityId]>
+            <#assign includedFacilityIds = includedFacilityIds + [facilityGroupMember.facilityId]>
+          </#list>
+          <#assign facilityGroupMembers = ec.entity.find("org.apache.ofbiz.product.facility.FacilityGroupMember").condition("facilityGroupId", "in", excludedFacilityGroupIds).conditionDate("", "", ec.user.nowTimestamp).list()!>
+          <#list facilityGroupMembers as facilityGroupMember>
+            <#assign excludedFacilityIds = excludedFacilityIds + [facilityGroupMember.facilityId]>
+          </#list>
+
+          <#list includedFacilityIds as includedFacilityId>
+            <#if !excludedFacilityIds?seq_contains(includedFacilityId)>
+              <#assign facilityIds = facilityIds + [includedFacilityId]>
+            </#if>
           </#list>
         </#if>
     </#if>

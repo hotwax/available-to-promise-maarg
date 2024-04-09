@@ -56,6 +56,9 @@
             <method type="get"><entity name="co.hotwax.product.feature.ProductFeatureAndType" operation="list"/></method>
         </resource>
     </resource>
+    <resource name="solrFacets">
+        <method type="get"><service name="co.hotwax.common.CommonServices.autoComplete#SolrFacet"/></method>
+    </resource>
     <resource name="checkOmsConnection">
         <method type="get"><service name="co.hotwax.common.CommonServices.checkOmsConnection"/></method>
     </resource>
