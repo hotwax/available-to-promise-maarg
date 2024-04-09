@@ -22,7 +22,6 @@
     </#if>
     <#if !facilityIds?has_content>
       <#assign facilityGroupConditions = ec.entity.find("co.hotwax.rule.RuleCondition").condition("ruleId", decisionRule.ruleId).condition("conditionTypeEnumId", "ENTCT_ATP_FAC_GROUPS").list()!>
-        <#assign facilityGroupIds = []>
         <#assign includedFacilityGroupIds = []>
         <#assign excludedFacilityGroupIds = []>
         <#if facilityGroupConditions?has_content>
