@@ -96,7 +96,7 @@ under the License.
         <field name="fieldName" type="text-medium" enable-audit-log="true"><description>Input parameter for the condition.</description></field>
         <field name="operator" type="text-medium" enable-audit-log="true"><description>Operator used in the condition.</description></field>
         <field name="fieldValue" type="text-long" enable-audit-log="true"><description>Value of the condition.</description></field>
-        <field name="multiValued" type="text-medium" enable-audit-log="true"><description>Indicator for multi value field mainly for Solr/ES schema.</description></field>
+        <field name="multiValued" type="text-indicator" enable-audit-log="true"><description>Indicator for multi value field mainly for Solr/ES schema.</description></field>
         <field name="sequenceNum" type="number-integer" enable-audit-log="true"><description>Sequence number for ordering.</description></field>
         <field name="createdDate" type="date-time"><description>Date and time when the condition was created.</description></field>
         <relationship type="one" fk-name="RULE_COND_TYPEENUM" title="RuleConditionType" related="org.apache.ofbiz.common.enum.Enumeration" short-alias="ruleConditionType">

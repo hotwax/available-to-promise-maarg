@@ -46,6 +46,21 @@
             <method type="get"><entity name="co.hotwax.facility.FacilityAndType" operation="one"/></method>
         </id>
     </resource>
+    <resource name="facilityGroups" description="Get the facility groups">
+        <method type="post"><service name="co.hotwax.product.FacilityServices.create#FacilityGroup"/></method>
+        <method type="get"><entity name="org.apache.ofbiz.product.facility.FacilityGroup" operation="list"/></method>
+        <id name="facilityGroupId">
+            <method type="get"><entity name="org.apache.ofbiz.product.facility.FacilityGroup" operation="one"/></method>
+            <method type="put"><entity name="org.apache.ofbiz.product.facility.FacilityGroup" operation="update"/></method>
+            <resource name="facilities">
+                <method type="get"><entity name="co.hotwax.facility.FacilityGroupAndMember" operation="list"/></method>
+                <method type="post"><entity name="org.apache.ofbiz.product.facility.FacilityGroupMember" operation="store"/></method>
+                <id name="facilityId">
+                    <method type="put"><entity name="org.apache.ofbiz.product.facility.FacilityGroupMember" operation="update"/></method>
+                </id>
+            </resource>
+        </id>
+    </resource>
     <resource name="products" description="Get the products">
         <id name="productId">
             <resource name="tags">
