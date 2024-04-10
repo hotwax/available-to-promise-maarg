@@ -56,6 +56,9 @@
             <method type="get"><entity name="co.hotwax.product.feature.ProductFeatureAndType" operation="list"/></method>
         </resource>
     </resource>
+    <resource name="solrFacets">
+        <method type="get"><service name="co.hotwax.common.CommonServices.autoComplete#SolrFacet"/></method>
+    </resource>
     <resource name="checkOmsConnection">
         <method type="get"><service name="co.hotwax.common.CommonServices.checkOmsConnection"/></method>
     </resource>
@@ -74,6 +77,7 @@
     </resource>
     <resource name="ruleGroups">
         <method type="post"><entity name="co.hotwax.rule.RuleGroup" operation="store"/></method>
+        <method type="get"><entity name="co.hotwax.rule.RuleGroup" operation="list" masterName="default"/></method>
         <id name="ruleGroupId">
             <method type="get"><entity name="co.hotwax.rule.RuleGroup" operation="one" masterName="default"/></method>
             <method type="post"><entity name="co.hotwax.rule.RuleGroup" operation="store" masterName="default"/></method>
