@@ -41,13 +41,14 @@
         </id>
     </resource>
     <resource name="facilities" description="Get the facilities">
+        <method type="post"><entity name="org.apache.ofbiz.product.facility.Facility" operation="store"/></method>
         <method type="get"><entity name="co.hotwax.facility.FacilityAndType" operation="list"/></method>
         <id name="facilityId">
             <method type="get"><entity name="co.hotwax.facility.FacilityAndType" operation="one"/></method>
         </id>
     </resource>
     <resource name="facilityGroups" description="Get the facility groups">
-        <method type="post"><service name="co.hotwax.product.FacilityServices.create#FacilityGroup"/></method>
+        <method type="post"><entity name="org.apache.ofbiz.product.facility.FacilityGroup" operation="store"/></method>
         <method type="get"><entity name="org.apache.ofbiz.product.facility.FacilityGroup" operation="list"/></method>
         <id name="facilityGroupId">
             <method type="get"><entity name="org.apache.ofbiz.product.facility.FacilityGroup" operation="one"/></method>
