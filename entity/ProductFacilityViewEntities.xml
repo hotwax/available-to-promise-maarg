@@ -65,4 +65,16 @@ under the License.
         <alias-all entity-alias="PF"/>
         <alias entity-alias="PFT" name="featureTypeDescription" field="description"/>
     </view-entity>
+
+    <view-entity entity-name="FacilityGroupAndMember" package-name="co.hotwax.facility">
+        <member-entity entity-alias="FG" entity-name="FacilityGroup"/>
+        <member-entity entity-alias="FGM" entity-name="FacilityGroupMember" join-from-alias="FG">
+            <key-map field-name="facilityGroupId"/>
+        </member-entity>
+        <alias-all entity-alias="FG"/>
+        <alias-all entity-alias="FGM">
+            <exclude field="facilityGroupId"/>
+        </alias-all>
+        <entity-condition><date-filter entity-alias="FGM"/></entity-condition>
+    </view-entity>
 </entities>
