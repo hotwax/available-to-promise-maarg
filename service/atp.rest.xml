@@ -44,6 +44,7 @@
         <method type="post"><entity name="org.apache.ofbiz.product.facility.Facility" operation="store"/></method>
         <method type="get"><entity name="co.hotwax.facility.FacilityAndType" operation="list"/></method>
         <id name="facilityId">
+            <method type="put"><entity name="org.apache.ofbiz.product.facility.Facility" operation="update"/></method>
             <method type="get"><entity name="co.hotwax.facility.FacilityAndType" operation="one"/></method>
         </id>
     </resource>
@@ -99,6 +100,9 @@
             <method type="post"><entity name="co.hotwax.rule.RuleGroup" operation="store" masterName="default"/></method>
             <resource name="rules">
                 <method type="get"><entity name="co.hotwax.rule.DecisionRule" operation="list"/></method>
+            </resource>
+            <resource name="runNow">
+                <method type="post"><service name="co.hotwax.rule.DecisionRuleServices.scheduleNow#RuleGroup"/></method>
             </resource>
             <resource name="schedule">
                 <method type="get"><service name="co.hotwax.rule.DecisionRuleServices.get#RuleGroupSchedule"/></method>
