@@ -52,4 +52,10 @@
             sendPath="/home/${sftpUsername}/hotwax/available-to-promise/PRODUCT_FACILITY_${dateTime}.csv"
             sendServiceName="co.hotwax.ofbiz.SystemMessageServices.send#SystemMessageFileSftp"
             receivePath="${contentRoot}/hotwax/available-to-promise/PRODUCT_FACILITY_${dateTime}.csv"/>
+
+    <!-- Service job data to purge rule group runs data older than 30 days -->
+    <moqui.service.job.ServiceJob jobName="clean_Rule_Group_Runs" description="Clean Rule Group runs"
+                                  serviceName="co.hotwax.rule.DecisionRuleServices.clean#RuleGroupRun" cronExpression="0 0 2 * * ?" paused="N">
+        <parameters parameterName="daysToKeep" parameterValue="30"/>
+    </moqui.service.job.ServiceJob>
 </entity-facade-xml>
