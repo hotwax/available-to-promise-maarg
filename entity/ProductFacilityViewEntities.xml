@@ -44,6 +44,7 @@ under the License.
         </alias-all>
         <alias entity-alias="PS" name="storeExternalId" field="externalId"/>
         <alias entity-alias="FT" name="parentFacilityTypeId" field="parentTypeId"/>
+        <entity-condition><date-filter entity-alias="PSF"/></entity-condition>
     </view-entity>
     <view-entity entity-name="DecisionRuleAndCondition" package="co.hotwax.common">
         <member-entity entity-alias="DR" entity-name="co.hotwax.rule.DecisionRule"/>
@@ -66,15 +67,20 @@ under the License.
         <alias entity-alias="PFT" name="featureTypeDescription" field="description"/>
     </view-entity>
 
-    <view-entity entity-name="FacilityGroupAndMember" package-name="co.hotwax.facility">
+    <view-entity entity-name="FacilityGroupAndMember" package="co.hotwax.facility">
         <member-entity entity-alias="FG" entity-name="FacilityGroup"/>
         <member-entity entity-alias="FGM" entity-name="FacilityGroupMember" join-from-alias="FG">
             <key-map field-name="facilityGroupId"/>
+        </member-entity>
+        <member-entity entity-alias="FAC" entity-name="Facility" join-from-alias="FGM">
+            <key-map field-name="facilityId"/>
         </member-entity>
         <alias-all entity-alias="FG"/>
         <alias-all entity-alias="FGM">
             <exclude field="facilityGroupId"/>
         </alias-all>
+        <alias entity-alias="FAC" name="facilityName"/>
+        <alias entity-alias="FAC" name="facilityTypeId"/>
         <entity-condition><date-filter entity-alias="FGM"/></entity-condition>
     </view-entity>
 </entities>

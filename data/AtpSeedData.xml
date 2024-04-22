@@ -6,8 +6,10 @@
     <moqui.basic.EnumerationType enumTypeId="ATP_RULE_GROUP_TYPE" description="Rule group type" parentTypeId="AVAILABLE_TO_PROMISE"/>
     <moqui.basic.Enumeration enumId="RG_THRESHOLD" description="Threshold rule group" sequenceNum="5" enumTypeId="ATP_RULE_GROUP_TYPE" enumCode="RG_THRESHOLD"/>
     <moqui.basic.Enumeration enumId="RG_SAFETY_STOCK" description="Safety stock rule group" sequenceNum="10" enumTypeId="ATP_RULE_GROUP_TYPE" enumCode="RG_SAFETY_STOCK"/>
-    <moqui.basic.Enumeration enumId="RG_ALLOW_BROKERING" description="Allow brokering rule group" sequenceNum="15" enumTypeId="ATP_RULE_GROUP_TYPE" enumCode="RG_ALLOW_BROKERING"/>
-    <moqui.basic.Enumeration enumId="RG_ALLOW_PICKUP" description="Allow pickup rule group" sequenceNum="20" enumTypeId="ATP_RULE_GROUP_TYPE" enumCode="RG_ALLOW_PICKUP"/>
+    <moqui.basic.Enumeration enumId="RG_SHIPPING_CHANNEL" description="Allow brokering on channel rule group" sequenceNum="15" enumTypeId="ATP_RULE_GROUP_TYPE" enumCode="RG_SHIPPING_CHANNEL"/>
+    <moqui.basic.Enumeration enumId="RG_SHIPPING_FACILITY" description="Allow brokering on facility rule group" sequenceNum="20" enumTypeId="ATP_RULE_GROUP_TYPE" enumCode="RG_SHIPPING_FACILITY"/>
+    <moqui.basic.Enumeration enumId="RG_PICKUP_CHANNEL" description="Allow pickup on channel rule group" sequenceNum="25" enumTypeId="ATP_RULE_GROUP_TYPE" enumCode="RG_PICKUP_CHANNEL"/>
+    <moqui.basic.Enumeration enumId="RG_PICKUP_FACILITY" description="Allow pickup on facility rule group" sequenceNum="30" enumTypeId="ATP_RULE_GROUP_TYPE" enumCode="RG_PICKUP_FACILITY"/>
 
     <moqui.basic.EnumerationType enumTypeId="CONDITION_TYPE" description="Filter Condition type" parentTypeId="AVAILABLE_TO_PROMISE"/>
     <moqui.basic.Enumeration enumId="ENTCT_ATP_SORT_BY" description="Order by" sequenceNum="5" enumTypeId="CONDITION_TYPE" enumCode="orderBy"/>
