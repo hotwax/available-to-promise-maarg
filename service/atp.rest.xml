@@ -25,9 +25,21 @@
         <id name="productStoreId">
             <resource name="facilityGroups">
                 <method type="get"><entity name="co.hotwax.facility.ProductStoreAndFacilityGroup" operation="list"/></method>
+                <id name="facilityGroupId">
+                    <resource name="association">
+                        <method type="post"><entity name="co.hotwax.facility.ProductStoreFacilityGroup" operation="store"/></method>
+                        <method type="put"><entity name="co.hotwax.facility.ProductStoreFacilityGroup" operation="update"/></method>
+                    </resource>
+                </id>
             </resource>
             <resource name="facilities">
                 <method type="get"><entity name="co.hotwax.product.store.ProductStoreFacilityDetail" operation="list"/></method>
+                <id name="facilityId">
+                    <resource name="association">
+                        <method type="post"><entity name="org.apache.ofbiz.product.store.ProductStoreFacility" operation="store"/></method>
+                        <method type="put"><entity name="org.apache.ofbiz.product.store.ProductStoreFacility" operation="update"/></method>
+                    </resource>
+                </id>
             </resource>
         </id>
     </resource>
@@ -56,9 +68,11 @@
             <method type="put"><entity name="org.apache.ofbiz.product.facility.FacilityGroup" operation="update"/></method>
             <resource name="facilities">
                 <method type="get"><entity name="co.hotwax.facility.FacilityGroupAndMember" operation="list"/></method>
-                <method type="post"><entity name="org.apache.ofbiz.product.facility.FacilityGroupMember" operation="store"/></method>
                 <id name="facilityId">
-                    <method type="put"><entity name="org.apache.ofbiz.product.facility.FacilityGroupMember" operation="update"/></method>
+                    <resource name="association">
+                        <method type="post"><entity name="org.apache.ofbiz.product.facility.FacilityGroupMember" operation="store"/></method>
+                        <method type="put"><entity name="org.apache.ofbiz.product.facility.FacilityGroupMember" operation="update"/></method>
+                    </resource>
                 </id>
             </resource>
         </id>
