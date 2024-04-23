@@ -14,6 +14,14 @@
   <#list decisionRules as decisionRule>
     <#assign ruleActions = ec.entity.find("co.hotwax.rule.RuleAction").condition("ruleId", decisionRule.ruleId).orderBy("sequenceNum asc").list()!>
     <#assign ruleConditions = ec.entity.find("co.hotwax.rule.RuleCondition").condition("ruleId", decisionRule.ruleId).condition("conditionTypeEnumId", "ENTCT_ATP_FILTER").orderBy("sequenceNum asc").list()!>
+
+    <#assign conditionFieldNames = []>
+    <#list ruleConditions as ruleCondition>
+      <#if !conditionFieldNames?seq_contains(ruleCondition.fieldName)>
+        <#assign conditionFieldNames = conditionFieldNames + [ruleCondition.fieldName]/>
+      </#if>
+    </#list>
+
     <#assign facilityConditions = ec.entity.find("co.hotwax.rule.RuleCondition").condition("ruleId", decisionRule.ruleId).condition("conditionTypeEnumId", "ENTCT_ATP_FACILITIES").list()!>
     <#assign facilityIds = []/>
     <#if facilityConditions?has_content>
@@ -55,7 +63,8 @@
       rule "${decisionRule.ruleId}"
       salience ${ruleCount}
       when
-       $product : Map(<#list ruleConditions as ruleCondition><#if ruleCondition_index gt 0>,</#if> ${Static["co.hotwax.common.DecisionRuleHelper"].makeDroolsCondition(ruleCondition)!}</#list>)
+       <#--First checking if the condition fields exist in the input data and then applying rule conditions -->
+       $product : Map(<#list conditionFieldNames as fieldName>containsKey("${fieldName}"), </#list> <#list ruleConditions as ruleCondition><#if ruleCondition_index gt 0>,</#if>${Static["co.hotwax.common.DecisionRuleHelper"].makeDroolsCondition(ruleCondition)!}</#list>)
       then
         <#list ruleActions as ruleAction>
           <#list facilityIds as facilityId>
