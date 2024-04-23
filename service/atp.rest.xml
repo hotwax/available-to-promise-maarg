@@ -28,7 +28,6 @@
                 <id name="facilityGroupId">
                     <resource name="association">
                         <method type="post"><entity name="co.hotwax.facility.ProductStoreFacilityGroup" operation="store"/></method>
-                        <method type="put"><entity name="co.hotwax.facility.ProductStoreFacilityGroup" operation="update"/></method>
                     </resource>
                 </id>
             </resource>
@@ -37,7 +36,6 @@
                 <id name="facilityId">
                     <resource name="association">
                         <method type="post"><entity name="org.apache.ofbiz.product.store.ProductStoreFacility" operation="store"/></method>
-                        <method type="put"><entity name="org.apache.ofbiz.product.store.ProductStoreFacility" operation="update"/></method>
                     </resource>
                 </id>
             </resource>
@@ -71,7 +69,6 @@
                 <id name="facilityId">
                     <resource name="association">
                         <method type="post"><entity name="org.apache.ofbiz.product.facility.FacilityGroupMember" operation="store"/></method>
-                        <method type="put"><entity name="org.apache.ofbiz.product.facility.FacilityGroupMember" operation="update"/></method>
                     </resource>
                 </id>
             </resource>
