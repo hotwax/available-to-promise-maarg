@@ -17,7 +17,7 @@
             <parameter name="limit" type="String"/>
             <parameter name="q" type="String"/>
             <parameter name="term" type="String"/>
-            <parameter name="offset" type="Integer"/>
+            <parameter name="offset" type="String"/>
         </in-parameters>
         <out-parameters>
             <parameter name="facetResponse"/>
