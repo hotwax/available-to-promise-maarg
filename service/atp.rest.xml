@@ -129,6 +129,7 @@
     </resource>
     <resource name="decisionRules">
         <method type="post"><entity name="co.hotwax.rule.DecisionRule" operation="store"/></method>
+        <method type="get"><entity name="co.hotwax.rule.DecisionRule" operation="list" masterName="default"/></method>
         <id name="ruleId">
             <method type="get"><entity name="co.hotwax.rule.DecisionRule" operation="one" masterName="default"/></method>
             <method type="post"><entity name="co.hotwax.rule.DecisionRule" operation="store" masterName="default"/></method>

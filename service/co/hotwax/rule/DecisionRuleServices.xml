@@ -78,7 +78,7 @@
             <if condition="!ruleGroup">
                 <return error="true" message="Rule group not found for ${ruleGroupId}"/>
             </if>
-            <if condition="!ruleGroupId.productStoreId">
+            <if condition="!ruleGroup.productStoreId">
                 <return error="true" message="No productStore associated with rule group ${ruleGroup.groupName} [${ruleGroupId}]"/>
             </if>
             <if condition="ruleGroup.productStoreId != productStoreId">
