@@ -110,7 +110,7 @@
             </if>
             <service-call name="create#co.hotwax.rule.RuleGroupRun" transaction="force-new" ignore-error="true"
                     in-map="[ruleGroupId:ruleGroupId, productStoreId: productStoreId, startDate:ec.user.nowTimestamp]"
-                    out-map="ruleGroupRunResult"/>
+                    out-map="ruleGroupResult"/>
 
             <service-call name="co.hotwax.product.ProductFacilityServices.run#ExportProductFacilityDetail"
                     in-map="[ruleGroupId:ruleGroupId, productStoreId: productStoreId, systemMessageRemoteId: systemMessageRemoteId]"
@@ -131,8 +131,8 @@
             </script>
 
             <service-call name="update#co.hotwax.rule.RuleGroupRun" transaction="force-new" ignore-error="true"
-                    in-map="[ruleGroupRunId:ruleGroupRunResult.ruleGroupRunId, ruleGroupRunResult:ruleGroupRunResult, hasError:hasError, endDate:ec.user.nowTimestamp]"
-                    out-map="ruleGroupRunResult"/>
+                    in-map="[ruleGroupRunId:ruleGroupResult.ruleGroupRunId, ruleGroupRunResult:ruleGroupRunResult, hasError:hasError, endDate:ec.user.nowTimestamp]"
+                    out-map="ruleGroupResult"/>
 
             <message type="success">Finished rule group execution for ${ruleGroup.groupName} [${ruleGroupId}] rule group.</message>
         </actions>
