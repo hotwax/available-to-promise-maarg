@@ -50,7 +50,7 @@
     </service>
 
     <service verb="run" noun="RuleGroup" transaction-timeout="36000" authenticate="anonymous-all"
-             semaphore="wait" semaphore-parameter="productStoreId" semaphore-timeout="3600" semaphore-sleep="60"
+             semaphore="wait" semaphore-parameter="ruleGroupId" semaphore-timeout="3600" semaphore-sleep="60"
              semaphore-ignore="7200" semaphore-name="RuleGroup">
         <description>
             The action initiates the processing or execution sequence for a Rule Group within the system.
@@ -59,13 +59,12 @@
             <parameter name="ruleGroupId" required="true"/>
             <parameter name="productStoreId" required="true"/>
             <parameter name="systemMessageRemoteId" required="true"/>
-            <parameter name="forceRun" type="Boolean" default-value="false"/>
             <!--
-            In order to leverage the Service semaphore capabilities provided by the framework, we have chosen to include productStoreId as an input parameter.
-            While productStoreId already exists in the RuleGroup entity,
+            In order to leverage the Service semaphore capabilities provided by the framework, we have chosen to include ruleGroupId as an input parameter.
+            While ruleGroupId already exists in the RuleGroup entity,
             opting to use it as an input parameter allows us to seamlessly utilize the framework's existing functionality.
 
-            By incorporating productStoreId as an input parameter,
+            By incorporating ruleGroupId as an input parameter,
             we can take advantage of the framework's built-in features without the need for additional custom handling.
             This approach aligns with the established design principles within the framework and ensures a more streamlined and maintainable solution.
             -->
@@ -84,30 +83,7 @@
             <if condition="ruleGroup.productStoreId != productStoreId">
                 <return error="true" message="Rule group ${ruleGroup.groupName} [${ruleGroupId}] is not associated with productStoreId [${productStoreId}]."/>
             </if>
-            <!--TODO: Need to check if we really want to add below check, as we are using service semaphore to avoid simultaneous run -->
-            <entity-find entity-name="co.hotwax.rule.RuleGroupRun" list="ruleGroupRuns">
-                <econditions>
-                    <econdition field-name="productStoreId" from="ruleGroup.productStoreId"/>
-                    <econdition field-name="endDate" from="null"/>
-                </econditions>
-                <order-by field-name="-startDate"/>
-            </entity-find>
-            <set field="ruleGroupRun" from="ruleGroupRuns?ruleGroupRuns[0]: null"/>
-            <!-- If a rule group run is in execution, don't run the rule -->
-            <if condition="ruleGroupRun">
-                <if condition="forceRun">
-                    <service-call name="update#co.hotwax.rule.RuleGroupRun" transaction="force-new" ignore-error="true"
-                                  in-map="[ruleGroupRunId:ruleGroupRun.ruleGroupRunId,hasError:'Y',
-                                          ruleGroupRunResult:'Start a new force rule group run, bringing the current rule group run to an end',
-                                          endDate:ec.user.nowTimestamp]"
-                                  out-map="ruleGroupRunResult"/>
-                    <else>
-                        <return error="true" message="Rule group run [${ruleGroupRun.ruleGroupRunId}] for productStoreId [${ruleGroup.productStoreId}]
-                                already in execution since ${ruleGroupRun.startDate}"/>
-                    </else>
-                </if>
-
-            </if>
+            
             <service-call name="create#co.hotwax.rule.RuleGroupRun" transaction="force-new" ignore-error="true"
                     in-map="[ruleGroupId:ruleGroupId, productStoreId: productStoreId, startDate:ec.user.nowTimestamp]"
                     out-map="ruleGroupResult"/>
