@@ -139,7 +139,7 @@
 
                 data = writer.toString()
                 if (data) {
-                    try (Writer outFile = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(csvFilePath)))) {
+                    try (Writer outFile = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(csvFilePath, true)))) {
                         outFile.append(data);
                     }
                 }

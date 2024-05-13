@@ -69,7 +69,7 @@
         <#list ruleActions as ruleAction>
           <#list facilityIds as facilityId>
             $actionValues = new HashMap();
-            $actionValues.put("${ruleAction.fieldName}", ${ruleAction.fieldValue})
+            $actionValues.put("${ruleAction.fieldName}", "${ruleAction.fieldValue}")
             $actionValues.put("facility-id", "${facilityId}")
             $actionValues.put("product-id", $product.get("productId"))
             productFacilityDetail.put("${facilityId}-" + $product.get("productId"), $actionValues);
