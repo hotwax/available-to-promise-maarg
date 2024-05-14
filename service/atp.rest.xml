@@ -51,7 +51,7 @@
         </id>
     </resource>
     <resource name="facilities" description="Get the facilities">
-        <method type="post"><entity name="org.apache.ofbiz.product.facility.Facility" operation="store"/></method>
+        <method type="post"><entity name="org.apache.ofbiz.product.facility.Facility" operation="create"/></method>
         <method type="get"><entity name="co.hotwax.facility.FacilityAndType" operation="list"/></method>
         <resource name="orderCount">
             <method type="get"><entity name="co.hotwax.facility.FacilityOrderCount" operation="list"/></method>
@@ -62,7 +62,7 @@
         </id>
     </resource>
     <resource name="facilityGroups" description="Get the facility groups">
-        <method type="post"><entity name="org.apache.ofbiz.product.facility.FacilityGroup" operation="store"/></method>
+        <method type="post"><entity name="org.apache.ofbiz.product.facility.FacilityGroup" operation="create"/></method>
         <method type="get"><entity name="org.apache.ofbiz.product.facility.FacilityGroup" operation="list"/></method>
         <id name="facilityGroupId">
             <method type="get"><entity name="org.apache.ofbiz.product.facility.FacilityGroup" operation="one"/></method>
