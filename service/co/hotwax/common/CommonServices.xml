@@ -31,8 +31,8 @@
         <implements service="co.hotwax.common.CommonServices.autoComplete#OmsSolrFacetApi"/>
         <actions>
             <script>
-                omsBaseUrl = co.hotwax.common.DecisionRuleHelper.getOmsInstanceUrl(ec.ecfi);
-                token = co.hotwax.common.DecisionRuleHelper.getOmsJwtToken(ec.ecfi);
+                omsBaseUrl = co.hotwax.util.MaargUtil.getOmsInstanceUrl(getOmsInstanceUrl(ec.ecfi);
+                token = co.hotwax.util.MaargUtil.getOmsJwtToken(ec.ecfi);
             </script>
             <if condition="!token">
                 <return error="true" message="Unable to generate oms token, check JWT configuration"/>
