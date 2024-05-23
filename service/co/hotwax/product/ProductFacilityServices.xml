@@ -51,6 +51,7 @@
             </if>
             <set field="products" from="productResult.productDetail.products"/>
             <set field="totalProducts" from="productResult.productDetail.totalCount"/>
+            <log message="RGEXECUTION-${ruleGroupId}: Total ${totalProducts} products to process."/>
 
             <iterate list="products" entry="product">
                 <script>
@@ -59,11 +60,15 @@
                     int numberOfRulesFired = kieSession.fireAllRules();
                 </script>
             </iterate>
+            <set field="csvFilePath" value=""/>
+            <if condition="productFacilityDetail.values()">
             <service-call name="co.hotwax.product.ProductFacilityServices.prepare#ProductFacilityCsv"
                           in-map="[products: productFacilityDetail.values(), systemMessageTypeId: 'ExportProductFacilityDetail']"
                           out-map="result"/>
             <!--The fileName will be used in subsequent calls in order to keep only one CSV file in a single run. So if fileName is passed, data get appended to the existing file-->
             <set field="csvFilePath" from="result.csvFilePath"/>
+            <set field="productFacilityDetail" from="[:]"/>
+            </if>
             <script>
                 import co.hotwax.common.CommerceUtil
                 paginationValues = CommerceUtil.getPaginationValues(viewSize, 0, totalProducts)
@@ -83,14 +88,22 @@
                             int numberOfRulesFired = kieSession.fireAllRules();
                         </script>
                     </iterate>
+                    <if condition="productFacilityDetail.values()">
                     <service-call name="co.hotwax.product.ProductFacilityServices.prepare#ProductFacilityCsv"
                             in-map="[products: productFacilityDetail.values(), systemMessageTypeId: 'ExportProductFacilityDetail', csvFilePath: csvFilePath]"
                             out-map="result"/>
+                    <set field="csvFilePath" from="result.csvFilePath"/>
+                    <set field="productFacilityDetail" from="[:]"/>
+                    </if>
                 </if>
             </iterate>
             <script>
                 kieSession.dispose();
             </script>
+            <if condition="!productFacilityDetail.values()">
+                <return message="No products falls under any rule in this rule group."/>
+            </if>
+
             <service-call name="co.hotwax.product.ProductFacilityServices.upload#ProductFacilityCsvToFtp" transaction="force-new"
                     in-map="[filePath: csvFilePath, systemMessageRemoteId: systemMessageRemoteId]"
                     out-map="result"/>
@@ -227,7 +240,7 @@
                 ec.resourceFacade.template(templateLocation, writer)
 
                 ruleTemplateBytes = writer.toString().getBytes();
-                ec.logger.info("Rule Template:" +writer.toString())
+                ec.logger.info("RGEXECUTION-${ruleGroupId}: Rule Template:" +writer.toString())
             </script>
         </actions>
     </service>
