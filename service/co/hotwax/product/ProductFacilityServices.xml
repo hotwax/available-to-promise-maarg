@@ -51,7 +51,7 @@
             </if>
             <set field="products" from="productResult.productDetail.products"/>
             <set field="totalProducts" from="productResult.productDetail.totalCount"/>
-            <log message="RGEXECUTION-${ruleGroupId}: Total ${totalProducts} products to process."/>
+            <log message="Rule group ${ruleGroupId}: Total ${totalProducts} products to process."/>
 
             <iterate list="products" entry="product">
                 <script>
@@ -240,7 +240,7 @@
                 ec.resourceFacade.template(templateLocation, writer)
 
                 ruleTemplateBytes = writer.toString().getBytes();
-                ec.logger.info("RGEXECUTION-${ruleGroupId}: Rule Template:" +writer.toString())
+                ec.logger.info("Rule group ${ruleGroupId}: Rule Template:" +writer.toString())
             </script>
         </actions>
     </service>
