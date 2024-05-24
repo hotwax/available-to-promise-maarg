@@ -17,7 +17,7 @@
                 <return error="true" message="No rule group found."/>
             </if>
 
-            <service-call name="co.hotwax.product.ProductFacilityServices.build#ruleTemplate"
+            <service-call name="co.hotwax.product.ProductFacilityServices.build#RuleTemplate"
                     in-map="[ruleGroupId: ruleGroupId]"
                     out-map="templateResult"/>
             <set field="ruleTemplateBytes" from="templateResult.ruleTemplateBytes"/>
@@ -226,7 +226,7 @@
         </actions>
     </service>
 
-    <service verb="build" noun="ruleTemplate">
+    <service verb="build" noun="RuleTemplate">
         <in-parameters>
             <parameter name="ruleGroupId" type="String" required="true"/>
         </in-parameters>
