@@ -125,7 +125,7 @@
         </out-parameters>
         <actions>
             <if condition="!products">
-                <return error="No products found."/>
+                <return error="true" message="No products found."/>
             </if>
             <set field="nowDate" from="ec.user.nowTimestamp"/>
             <set field="skipHeader" value="Y"/>
@@ -256,7 +256,7 @@
         </in-parameters>
         <actions>
             <if condition="!filePath">
-                <return error="No file path found."/>
+                <return error="true" message="No file path found."/>
             </if>
             <service-call name="create#moqui.service.message.SystemMessage" transaction="force-new"
                           in-map="[systemMessageTypeId : 'ExportProductFacilityDetail', systemMessageRemoteId: systemMessageRemoteId, statusId:'SmsgProduced', isOutgoing:'Y', messageText: filePath, initDate:ec.user.nowTimestamp]"
