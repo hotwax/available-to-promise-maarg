@@ -51,7 +51,9 @@ under the License.
         <member-entity entity-alias="RC" entity-name="co.hotwax.rule.RuleCondition" join-from-alias="DR">
             <key-map field-name="ruleId"/>
         </member-entity>
-        <alias-all entity-alias="DR"/>
+        <alias-all entity-alias="DR">
+            <exclude field="sequenceNum"/>
+        </alias-all>
         <alias-all entity-alias="RC">
             <exclude field="ruleId"/>
         </alias-all>

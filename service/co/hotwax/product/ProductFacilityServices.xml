@@ -17,7 +17,7 @@
                 <return error="true" message="No rule group found."/>
             </if>
 
-            <service-call name="co.hotwax.product.ProductFacilityServices.build#ruleTemplate"
+            <service-call name="co.hotwax.product.ProductFacilityServices.build#RuleTemplate"
                     in-map="[ruleGroupId: ruleGroupId]"
                     out-map="templateResult"/>
             <set field="ruleTemplateBytes" from="templateResult.ruleTemplateBytes"/>
@@ -51,6 +51,7 @@
             </if>
             <set field="products" from="productResult.productDetail.products"/>
             <set field="totalProducts" from="productResult.productDetail.totalCount"/>
+            <log message="Rule group ${ruleGroupId}: Total ${totalProducts} products to process."/>
 
             <iterate list="products" entry="product">
                 <script>
@@ -59,11 +60,15 @@
                     int numberOfRulesFired = kieSession.fireAllRules();
                 </script>
             </iterate>
+            <set field="csvFilePath" value=""/>
+            <if condition="productFacilityDetail.values()">
             <service-call name="co.hotwax.product.ProductFacilityServices.prepare#ProductFacilityCsv"
                           in-map="[products: productFacilityDetail.values(), systemMessageTypeId: 'ExportProductFacilityDetail']"
                           out-map="result"/>
             <!--The fileName will be used in subsequent calls in order to keep only one CSV file in a single run. So if fileName is passed, data get appended to the existing file-->
             <set field="csvFilePath" from="result.csvFilePath"/>
+            <set field="productFacilityDetail" from="[:]"/>
+            </if>
             <script>
                 import co.hotwax.common.CommerceUtil
                 paginationValues = CommerceUtil.getPaginationValues(viewSize, 0, totalProducts)
@@ -83,14 +88,22 @@
                             int numberOfRulesFired = kieSession.fireAllRules();
                         </script>
                     </iterate>
+                    <if condition="productFacilityDetail.values()">
                     <service-call name="co.hotwax.product.ProductFacilityServices.prepare#ProductFacilityCsv"
                             in-map="[products: productFacilityDetail.values(), systemMessageTypeId: 'ExportProductFacilityDetail', csvFilePath: csvFilePath]"
                             out-map="result"/>
+                    <set field="csvFilePath" from="result.csvFilePath"/>
+                    <set field="productFacilityDetail" from="[:]"/>
+                    </if>
                 </if>
             </iterate>
             <script>
                 kieSession.dispose();
             </script>
+            <if condition="!productFacilityDetail.values()">
+                <return message="No products falls under any rule in this rule group."/>
+            </if>
+
             <service-call name="co.hotwax.product.ProductFacilityServices.upload#ProductFacilityCsvToFtp" transaction="force-new"
                     in-map="[filePath: csvFilePath, systemMessageRemoteId: systemMessageRemoteId]"
                     out-map="result"/>
@@ -112,7 +125,7 @@
         </out-parameters>
         <actions>
             <if condition="!products">
-                <return error="No products found."/>
+                <return error="true" message="No products found."/>
             </if>
             <set field="nowDate" from="ec.user.nowTimestamp"/>
             <set field="skipHeader" value="Y"/>
@@ -213,7 +226,7 @@
         </actions>
     </service>
 
-    <service verb="build" noun="ruleTemplate">
+    <service verb="build" noun="RuleTemplate">
         <in-parameters>
             <parameter name="ruleGroupId" type="String" required="true"/>
         </in-parameters>
@@ -227,7 +240,7 @@
                 ec.resourceFacade.template(templateLocation, writer)
 
                 ruleTemplateBytes = writer.toString().getBytes();
-                ec.logger.info("Rule Template:" +writer.toString())
+                ec.logger.info("Rule group ${ruleGroupId}: Rule Template:" +writer.toString())
             </script>
         </actions>
     </service>
@@ -243,7 +256,7 @@
         </in-parameters>
         <actions>
             <if condition="!filePath">
-                <return error="No file path found."/>
+                <return error="true" message="No file path found."/>
             </if>
             <service-call name="create#moqui.service.message.SystemMessage" transaction="force-new"
                           in-map="[systemMessageTypeId : 'ExportProductFacilityDetail', systemMessageRemoteId: systemMessageRemoteId, statusId:'SmsgProduced', isOutgoing:'Y', messageText: filePath, initDate:ec.user.nowTimestamp]"
