@@ -110,7 +110,7 @@
                     in-map="[ruleGroupRunId:ruleGroupResult.ruleGroupRunId, ruleGroupRunResult:ruleGroupRunResult, hasError:hasError, endDate:ec.user.nowTimestamp]"
                     out-map="ruleGroupResult"/>
 
-            <message type="success">Finished rule group execution for ${ruleGroup.groupName} [${ruleGroupId}] rule group.</message>
+            <message type="success">Finished rule group execution for rule group [${ruleGroupId}].</message>
         </actions>
     </service>
 
@@ -196,7 +196,7 @@
                 <if condition="!paused">
                     <set field="paused" value="N"/>
                 </if>
-                <set field="jobName" value="Rule_Group_${ruleGroup.ruleGroupId}"/>
+                <set field="jobName" value="ATP_Rule_Group_${ruleGroup.ruleGroupId}"/>
                 <service-call name="create#moqui.service.job.ServiceJob" in-map="context + [jobName: jobName]" out-map="context"/>
                 <!-- Set the JobName in RuleGroup entity -->
                 <set field="ruleGroup.jobName" from="jobName"/>

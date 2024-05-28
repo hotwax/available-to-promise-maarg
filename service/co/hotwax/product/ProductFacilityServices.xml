@@ -100,7 +100,9 @@
             <script>
                 kieSession.dispose();
             </script>
-            <if condition="!productFacilityDetail.values()">
+
+            <!--If no products fall under any rule, no CSV will be created, and there will be no need to attempt to upload it to FTP.-->
+            <if condition="!csvFilePath">
                 <return message="No products falls under any rule in this rule group."/>
             </if>
 
@@ -108,7 +110,7 @@
                     in-map="[filePath: csvFilePath, systemMessageRemoteId: systemMessageRemoteId]"
                     out-map="result"/>
 
-            <log message="Product facility rules executed successfully for rule group [${ruleGroupId}]."/>
+            <return message="Product facility rules executed successfully for rule group [${ruleGroupId}]."/>
         </actions>
     </service>
     <service verb="prepare" noun="ProductFacilityCsv" authenticate="false" transaction-timeout="7200">
