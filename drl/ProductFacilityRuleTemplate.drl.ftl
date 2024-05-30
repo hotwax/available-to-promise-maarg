@@ -1,3 +1,5 @@
+<#assign ruleGroup = ec.entity.find("co.hotwax.rule.RuleGroup").condition("ruleGroupId", ruleGroupId).condition("statusId", "ATP_RG_ACTIVE").one()!>
+<#if ruleGroup?has_content>
 <#assign decisionRules = ec.entity.find("co.hotwax.rule.DecisionRule").condition("ruleGroupId", ruleGroupId).condition("statusId", "ATP_RULE_ACTIVE").orderBy("sequenceNum asc").list()!>
 <#if decisionRules?has_content>
 
@@ -26,6 +28,16 @@
     <#assign facilityIds = []/>
     <#if facilityConditions?has_content>
       <#assign facilityCondition = facilityConditions?first/>
+      <#if "ALL" == facilityCondition.fieldValue!>
+        <#assign allConfigFacilities = ec.entity.find("co.hotwax.product.store.ProductStoreFacilityDetail").selectField("facilityId").condition("productStoreId", ruleGroup.productStoreId, "facilityTypeId", "CONFIGURATION").list()!>
+        <#if allConfigFacilities?has_content>
+          <#list allConfigFacilities as configFacility>
+            <#assign facilityIds = facilityIds + [configFacility.facilityId]>
+          </#list>
+        </#if>
+      <#else>
+        <#assign facilityIds = Static["co.hotwax.common.DecisionRuleHelper"].valueToCollection(facilityCondition.fieldValue)/>
+      </#if>
       <#assign facilityIds = Static["co.hotwax.common.DecisionRuleHelper"].valueToCollection(facilityCondition.fieldValue)/>
     </#if>
     <#if !facilityIds?has_content>
@@ -33,6 +45,16 @@
         <#assign includedFacilityGroupIds = []>
         <#assign excludedFacilityGroupIds = []>
         <#if facilityGroupConditions?has_content>
+          <#assign facilityGroupCondition = facilityGroupConditions?first/>
+          <#if "ALL" == facilityGroupCondition.fieldValue!>
+            <#assign allFacilities = ec.entity.find("co.hotwax.product.store.ProductStoreFacilityDetail").selectField("facilityId").condition("productStoreId", ruleGroup.productStoreId).condition("facilityTypeId", "not-equals", "VIRTUAL_FACILITY").condition("parentFacilityTypeId", "not-equals", "VIRTUAL_FACILITY").list()!>
+            <#if allFacilities?has_content>
+              <#list allFacilities as facility>
+                <#assign facilityIds = facilityIds + [facility.facilityId]>
+              </#list>
+            </#if>
+          </#if>
+          <#if !facilityIds?has_content>
           <#list facilityGroupConditions as facilityGroupCondition>
             <#if "in" == facilityGroupCondition.operator>
               <#assign includedFacilityGroupIds = includedFacilityGroupIds + Static["co.hotwax.common.DecisionRuleHelper"].valueToCollection(facilityGroupCondition.fieldValue)/>
@@ -57,6 +79,7 @@
               <#assign facilityIds = facilityIds + [includedFacilityId]>
             </#if>
           </#list>
+          </#if>
         </#if>
     </#if>
     <#if facilityIds?has_content>
@@ -79,4 +102,5 @@
     </#if>
     <#assign ruleCount = ruleCount - 1>
   </#list>
+</#if>
 </#if>
