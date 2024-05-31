@@ -29,7 +29,7 @@
     <#if facilityConditions?has_content>
       <#assign facilityCondition = facilityConditions?first/>
       <#if "ALL" == facilityCondition.fieldValue!>
-        <#assign allConfigFacilities = ec.entity.find("co.hotwax.product.store.ProductStoreFacilityDetail").selectField("facilityId").condition("productStoreId", ruleGroup.productStoreId, "facilityTypeId", "CONFIGURATION").list()!>
+        <#assign allConfigFacilities = ec.entity.find("co.hotwax.product.store.ProductStoreFacilityDetail").selectField("facilityId").condition("productStoreId", ruleGroup.productStoreId).condition("facilityTypeId", "CONFIGURATION").list()!>
         <#if allConfigFacilities?has_content>
           <#list allConfigFacilities as configFacility>
             <#assign facilityIds = facilityIds + [configFacility.facilityId]>
@@ -38,7 +38,6 @@
       <#else>
         <#assign facilityIds = Static["co.hotwax.common.DecisionRuleHelper"].valueToCollection(facilityCondition.fieldValue)/>
       </#if>
-      <#assign facilityIds = Static["co.hotwax.common.DecisionRuleHelper"].valueToCollection(facilityCondition.fieldValue)/>
     </#if>
     <#if !facilityIds?has_content>
       <#assign facilityGroupConditions = ec.entity.find("co.hotwax.rule.RuleCondition").condition("ruleId", decisionRule.ruleId).condition("conditionTypeEnumId", "ENTCT_ATP_FAC_GROUPS").list()!>
