@@ -41,10 +41,11 @@
                 productFacilityDetail = [:]
             </script>
 
-            <set field="viewSize" value="1000" type="Integer"/>
+            <set field="viewSize" value="100" type="Integer"/>
             <set field="viewIndex" value="0" type="Integer"/>
+            <set field="fieldsToSelect" value="productId,tags,productFeatures"/>
             <service-call name="co.hotwax.product.ProductFacilityServices.get#Products"
-                          in-map="[viewIndex: viewIndex, viewSize: viewSize]"
+                          in-map="[viewIndex: viewIndex, viewSize: viewSize, fieldsToSelect: fieldsToSelect]"
                           out-map="productResult"/>
             <if condition="!productResult.productDetail">
                 <return error="true" message="No products found."/>
@@ -77,7 +78,7 @@
             </script>
             <iterate list="viewIndexList" entry="viewIndex">
                 <service-call name="co.hotwax.product.ProductFacilityServices.get#Products"
-                        in-map="[viewIndex: viewIndex*viewSize, viewSize: viewSize]"
+                        in-map="[viewIndex: viewIndex*viewSize, viewSize: viewSize, fieldsToSelect: fieldsToSelect]"
                         out-map="productResult"/>
                 <if condition="productResult.productDetail">
                     <set field="products" from="productResult.productDetail.products"/>
@@ -166,6 +167,7 @@
         <description>Get products</description>
         <in-parameters>
             <parameter name="query" type="String" required="false"/>
+            <parameter name="fieldsToSelect" type="String" required="false"/>
             <parameter name="filter" type="String" required="false"/>
             <parameter name="viewIndex" type="Integer" required="false"/>
             <parameter name="viewSize" type="Integer" required="false"/>
@@ -206,6 +208,9 @@
                     filterConditions.append(" AND " + filter)
                 }
                 queryObject = [query: query ?: "*:*", filter: filterConditions.toString(), params: [rows: viewSize ?: 10, start: viewIndex ?: 0]]
+                if (fieldsToSelect) {
+                  queryObject.fields = fieldsToSelect;
+                }
 
                 RestClient restClient = ec.service.rest().method("POST").uri(endPointUri.toString())
                 restClient.jsonObject([json: queryObject])
