@@ -41,6 +41,9 @@
             </resource>
         </id>
     </resource>
+    <resource name="shopifyShops">
+        <method type="get"><entity name="co.hotwax.shopify.ShopifyShopAndConfig" operation="list"/></method>
+    </resource>
     <resource name="status" description="Get the status items">
         <method type="get"><entity name="co.hotwax.common.status.StatusItemAndType" operation="list"/></method>
     </resource>
