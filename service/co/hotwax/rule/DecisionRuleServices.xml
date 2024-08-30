@@ -139,7 +139,7 @@
                 <script>
                     schedule = serviceJob.getMap()
                     try {
-                        schedule.cronDescription = org.moqui.impl.service.ScheduledJobRunner.getCronDescription(schedule.cronExpression, ec.user.getLocale(), true)
+                        schedule.cronDescription = co.hotwax.util.MaargUtil.getCronDescription(schedule.cronExpression, ec.user.getLocale())
                         cronExecutionTime = org.moqui.impl.service.ScheduledJobRunner.getExecutionTime(schedule.cronExpression)
                         nextExecutionTime = cronExecutionTime.nextExecution(java.time.ZonedDateTime.now()).orElse(null)
                         if (nextExecutionTime != null) {
@@ -177,10 +177,11 @@
             <if condition="cronExpression">
                 <script>
                     try {
-                        cronDescription = org.moqui.impl.service.ScheduledJobRunner.getCronDescription(cronExpression, ec.user.getLocale(), false)
+                        cron = org.moqui.impl.service.ScheduledJobRunner.getCron(cronExpression)
+                        cron.validate()
                     } catch (Exception e) {
-                        ec.logger.error("Error getting cron description: ${e.getMessage()}")
-                        ec.message.addError("Error getting cron description: ${e.getMessage()}")
+                        ec.logger.error("Invalid cron expression: ${e.getMessage()}")
+                        ec.message.addError("Invalid cron expression: ${e.getMessage()}")
                         return
                     }
                 </script>
