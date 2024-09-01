@@ -166,71 +166,30 @@
     <service verb="get" noun="Products" authenticate="false" transaction-timeout="7200">
         <description>Get products</description>
         <in-parameters>
-            <parameter name="query" type="String" required="false"/>
-            <parameter name="fieldsToSelect" type="String" required="false"/>
-            <parameter name="filter" type="String" required="false"/>
-            <parameter name="viewIndex" type="Integer" required="false"/>
-            <parameter name="viewSize" type="Integer" required="false"/>
+            <parameter name="query"/>
+            <parameter name="fieldsToSelect"/>
+            <parameter name="filter"/>
+            <parameter name="viewIndex" type="Integer"/>
+            <parameter name="viewSize" type="Integer"/>
         </in-parameters>
         <out-parameters>
             <parameter name="productDetail" type="Map"/>
         </out-parameters>
         <actions>
-            <!-- In case of schedule job run no user logged in, use system user to get the token-->
-            <set field="userName" from="ec.user.username" default-value="${System.getProperty('default.oms.user')}"/>
-            <script>
-                omsBaseUrl = co.hotwax.util.MaargUtil.getOmsInstanceUrl(ec.ecfi);
-                token = co.hotwax.util.MaargUtil.getOmsJwtToken(ec.ecfi, userName);
-            </script>
-            <if condition="!token">
-                <return error="true" message="Unable to generate oms token, check JWT configuration"/>
+            <set field="productDetail" from="[:]"/>
+            <set field="filterConditions" value="docType:PRODUCT AND isVirtual:false"/>
+            <if condition="filter">
+                <set field="filterConditions" value="${filterConditions} AND ${filter}"/>
             </if>
-            <if condition="!omsBaseUrl">
-                <return error="true" message="OMS base url not found"/>
+            <set field="queryObject" from="[query: query ?: '*:*', filter: filterConditions, params: [rows: viewSize ?: 10, start: viewIndex ?: 0]]" />
+            <if condition="fieldsToSelect">
+                <set field="queryObject.fields" from="fieldsToSelect"/>
             </if>
-
-            <script><![CDATA[
-                import org.moqui.context.ExecutionContext
-                import org.moqui.util.RestClient
-                ExecutionContext ec = context.ec
-
-                endPointUri = new StringBuilder()
-                endPointUri.append(omsBaseUrl)
-                endPointUri.append("/api/solr-query?token=")
-                endPointUri.append(token)
-
-                // Construct the JSON structure
-                productDetail = [:]
-
-                filterConditions = new StringBuilder()
-                filterConditions.append("docType:PRODUCT AND isVirtual:false")
-                if (filter) {
-                    filterConditions.append(" AND " + filter)
-                }
-                queryObject = [query: query ?: "*:*", filter: filterConditions.toString(), params: [rows: viewSize ?: 10, start: viewIndex ?: 0]]
-                if (fieldsToSelect) {
-                  queryObject.fields = fieldsToSelect;
-                }
-
-                RestClient restClient = ec.service.rest().method("POST").uri(endPointUri.toString())
-                restClient.jsonObject([json: queryObject])
-
-                try {
-                    RestClient.RestResponse restResponse = restClient.call()
-
-                    if (restResponse.statusCode == 200) {
-                        responseMap = (Map) restResponse.jsonObject()
-                        productDetail.products = responseMap.response.docs
-                        productDetail.totalCount = responseMap.response.numFound
-                    } else {
-                        ec.message.addMessage("Server error on Solr server: ${restResponse.getReasonPhrase()}")
-                    }
-                } catch (Exception e) {
-                    ec.logger.log(ec.logger.ERROR_INT, "Error calling request at ${restClient.getUri()?.toString()}", e)
-                    ec.message.addMessage("Error calling request at ${restClient.getUri()?.toString()}: ${e.toString()}")
-                    return
-                }
-            ]]></script>
+            <service-call name="co.hotwax.common.CommonServices.run#SolrQuery" in-map="[json:queryObject]" out-map="outResult"/>
+            <if condition="outResult">
+                <set field="productDetail.products" from="outResult.response.docs"/>
+                <set field="productDetail.totalCount" from="outResult.response.numFound"/>
+            </if>
             <log message="${viewSize} products are fetched successfully from index ${viewIndex}."/>
         </actions>
     </service>
