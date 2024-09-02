@@ -55,9 +55,9 @@
           </#if>
           <#if !facilityIds?has_content>
           <#list facilityGroupConditions as facilityGroupCondition>
-            <#if "in" == facilityGroupCondition.operator>
+            <#if "contains" == facilityGroupCondition.operator>
               <#assign includedFacilityGroupIds = includedFacilityGroupIds + Static["co.hotwax.common.DecisionRuleHelper"].valueToCollection(facilityGroupCondition.fieldValue)/>
-            <#elseif "not-in" == facilityGroupCondition.operator>
+            <#elseif "not-contains" == facilityGroupCondition.operator>
               <#assign excludedFacilityGroupIds = excludedFacilityGroupIds + Static["co.hotwax.common.DecisionRuleHelper"].valueToCollection(facilityGroupCondition.fieldValue)/>
             </#if>
           </#list>
