@@ -19,7 +19,7 @@ under the License.
 -->
 
 <component xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/moqui-conf-3.xsd"
-           name="available-to-promise" version="1.1.1">
+           name="available-to-promise" version="1.2.0">
     <!-- no dependencies -->
     <depends-on name="maarg-util"/>
 </component>
