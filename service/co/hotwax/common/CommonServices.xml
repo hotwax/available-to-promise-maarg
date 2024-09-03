@@ -17,7 +17,7 @@
             <parameter name="response"/>
         </out-parameters>
     </service>
-    <service verb="solr" noun="Query" type="oms-rest" location="solr-query" method="post">
+    <service verb="run" noun="SolrQuery" type="oms-rest" location="solr-query" method="post">
         <in-parameters>
             <parameter name="json" type="Map"/>
         </in-parameters>
