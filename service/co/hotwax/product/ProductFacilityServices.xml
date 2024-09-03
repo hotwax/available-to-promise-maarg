@@ -185,7 +185,7 @@
             <if condition="fieldsToSelect">
                 <set field="queryObject.fields" from="fieldsToSelect"/>
             </if>
-            <service-call name="co.hotwax.common.CommonServices.solr#Query" in-map="[json:queryObject]" out-map="outResult"/>
+            <service-call name="co.hotwax.common.CommonServices.run#SolrQuery" in-map="[json:queryObject]" out-map="outResult"/>
             <if condition="outResult">
                 <set field="productDetail.products" from="outResult.response.docs"/>
                 <set field="productDetail.totalCount" from="outResult.response.numFound"/>
