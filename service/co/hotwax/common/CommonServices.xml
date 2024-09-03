@@ -1,33 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://moqui.org/xsd/service-definition-3.xsd">
-    <service verb="run" noun="OmsApi" type="interface">
+    <service verb="autoComplete" noun="SolrFacet" type="oms-rest" location="AutoCompleteSolrFacet" method="post">
         <in-parameters>
-            <parameter name="token"/>
-            <parameter name="omsBaseUrl"/>
-        </in-parameters>
-    </service>
-    <service verb="autoComplete" noun="OmsSolrFacetApi" type="interface">
-        <in-parameters>
-            <parameter name="facetToSelect" type="String"/>
-            <parameter name="coreName" type="String"/>
-            <parameter name="docType" type="String"/>
-            <parameter name="searchfield" type="String"/>
-            <parameter name="jsonQuery" type="String"/>
-            <parameter name="noConditionFind" type="String"/>
-            <parameter name="limit" type="String"/>
-            <parameter name="q" type="String"/>
-            <parameter name="term" type="String"/>
-            <parameter name="offset" type="String"/>
+            <parameter name="facetToSelect"/>
+            <parameter name="coreName"/>
+            <parameter name="docType"/>
+            <parameter name="searchfield"/>
+            <parameter name="jsonQuery"/>
+            <parameter name="noConditionFind"/>
+            <parameter name="limit"/>
+            <parameter name="q"/>
+            <parameter name="term"/>
+            <parameter name="offset"/>
         </in-parameters>
         <out-parameters>
-            <parameter name="facetResponse"/>
+            <parameter name="response"/>
         </out-parameters>
     </service>
-    <service  verb="autoComplete" noun="OmsSolrFacet" type="remote-rest" location="${omsBaseUrl}/api/AutoCompleteSolrFacet?token=${token}" method="post" transaction-timeout="3600">
-        <implements service="co.hotwax.common.CommonServices.run#OmsApi"/>
-        <implements service="co.hotwax.common.CommonServices.autoComplete#OmsSolrFacetApi"/>
-    </service>
-    <service verb="run" noun="SolrQuery" type="oms-rest" location="solr-query" method="post">
+    <service verb="solr" noun="Query" type="oms-rest" location="solr-query" method="post">
         <in-parameters>
             <parameter name="json" type="Map"/>
         </in-parameters>
@@ -35,25 +25,4 @@
             <parameter name="response" type="Map"/>
         </out-parameters>
     </service>
-    <service verb="autoComplete" noun="SolrFacet" transaction-timeout="3600">
-        <implements service="co.hotwax.common.CommonServices.autoComplete#OmsSolrFacetApi"/>
-        <actions>
-            <!-- In case of schedule job run no user logged in, use system user to get the token-->
-            <set field="userName" from="ec.user.username" default-value="${System.getProperty('default.oms.user')}"/>
-            <script>
-                omsBaseUrl = co.hotwax.util.MaargUtil.getOmsInstanceUrl(ec.ecfi);
-                token = co.hotwax.util.MaargUtil.getOmsJwtToken(ec.ecfi, userName);
-            </script>
-            <if condition="!token">
-                <return error="true" message="Unable to generate oms token, check JWT configuration"/>
-            </if>
-            <if condition="!omsBaseUrl">
-                <return error="true" message="OMS base url not found"/>
-            </if>
-            <service-call name="co.hotwax.common.CommonServices.autoComplete#OmsSolrFacet" transaction-timeout="3600"
-                          in-map="context + [omsBaseUrl: omsBaseUrl, token: token]" transaction="force-new"
-                          out-map="facetResponse"/>
-        </actions>
-    </service>
-
 </services>
