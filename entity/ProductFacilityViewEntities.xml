@@ -55,8 +55,10 @@ under the License.
             <exclude field="sequenceNum"/>
         </alias-all>
         <alias-all entity-alias="RC">
+            <exclude field="createdDate"/>
             <exclude field="ruleId"/>
         </alias-all>
+        <alias entity-alias="RC" name="conditionCreatedDate" field="createdDate"/>
     </view-entity>
 
     <view-entity entity-name="ProductFeatureAndType" package="co.hotwax.product.feature">
