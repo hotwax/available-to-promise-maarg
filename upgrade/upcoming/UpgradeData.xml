@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<entity-facade-xml type="ext-upgrade-upcoming">
+    <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="ATP_RULE_ARCHIVED" toStatusId="ATP_RULE_ACTIVE" transitionName="Archived to Active"/>
+</entity-facade-xml>
