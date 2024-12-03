@@ -39,6 +39,7 @@
     <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="ATP_RULE_DRAFT" toStatusId="ATP_RULE_ACTIVE" transitionName="Active"/>
     <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="ATP_RULE_DRAFT" toStatusId="ATP_RULE_ARCHIVED" transitionName="Draft to Archived"/>
     <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="ATP_RULE_ACTIVE" toStatusId="ATP_RULE_ARCHIVED" transitionName="Active to Archived"/>
+    <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="ATP_RULE_ARCHIVED" toStatusId="ATP_RULE_ACTIVE" transitionName="Archived to Active"/>
 
 
     <artifactGroups artifactGroupId="ATP_API" description="Commerce ATP API (via root resource)">
