@@ -31,6 +31,7 @@
                 import org.kie.api.io.ResourceType;
                 import org.kie.api.KieBase;
                 import org.kie.api.KieServices
+                import co.hotwax.common.CommerceUtil
 
                 kieServices = KieServices.Factory.get();
                 kieHelper = new KieHelper();
@@ -44,11 +45,31 @@
             <set field="viewSize" value="100" type="Integer"/>
             <set field="viewIndex" value="0" type="Integer"/>
             <set field="fieldsToSelect" value="productId,tags,productFeatures"/>
+            <set field="serviceContext" from="[viewIndex: viewIndex, viewSize: viewSize, fieldsToSelect: fieldsToSelect]"/>
+
+            <!--Fetching last successful job run for the rule group-->
+            <entity-find entity-name="co.hotwax.rule.RuleGroupRun" list="ruleGroupRuns">
+                <econditions>
+                    <econdition field-name="ruleGroupId" from="ruleGroupId"/>
+                    <econdition field-name="productStoreId" from="productStoreId"/>
+                    <econdition field-name="hasError" value="N"/>
+                    <econdition field-name="endDate" operator="is-not-null"/>
+                </econditions>
+                <order-by field-name="-startDate"/>
+            </entity-find>
+            <set field="lastRuleGroupRun" from="ruleGroupRuns ? ruleGroupRuns[0] : null"/>
+            <!--Checking if the rule group is modified after last successful run in order -->
+            <if condition="lastRuleGroupRun &amp;&amp; lastRuleGroupRun.startDate &amp;&amp; ruleGroup.lastModifiedDate &amp;&amp; ruleGroup.lastModifiedDate &lt; lastRuleGroupRun.startDate">
+                <set field="lastRunStartDateTimeString"
+                     from="java.time.ZonedDateTime.ofInstant(lastRuleGroupRun.startDate.toInstant(), java.time.ZoneId.of('UTC')).format(java.time.format.DateTimeFormatter.ISO_INSTANT)"/>
+                <set field="serviceContext" from="serviceContext + [filter:'updatedDatetime:[' + lastRunStartDateTimeString + ' TO *]']"/>
+            </if>
+
             <service-call name="co.hotwax.product.ProductFacilityServices.get#Products"
-                          in-map="[viewIndex: viewIndex, viewSize: viewSize, fieldsToSelect: fieldsToSelect]"
+                          in-map="serviceContext"
                           out-map="productResult"/>
-            <if condition="!productResult.productDetail">
-                <return error="true" message="No products found."/>
+            <if condition="!productResult.productDetail || productResult.productDetail.totalCount === 0">
+                <return message="No products found."/>
             </if>
             <set field="products" from="productResult.productDetail.products"/>
             <set field="totalProducts" from="productResult.productDetail.totalCount"/>
@@ -70,15 +91,15 @@
             <set field="csvFilePath" from="result.csvFilePath"/>
             <set field="productFacilityDetail" from="[:]"/>
             </if>
+            <if condition="totalProducts &gt; viewSize">
             <script>
-                import co.hotwax.common.CommerceUtil
                 paginationValues = CommerceUtil.getPaginationValues(viewSize, 0, totalProducts)
                 viewIndexLast = paginationValues.viewIndexLast
                 viewIndexList = (1..viewIndexLast).toList()
             </script>
             <iterate list="viewIndexList" entry="viewIndex">
                 <service-call name="co.hotwax.product.ProductFacilityServices.get#Products"
-                        in-map="[viewIndex: viewIndex*viewSize, viewSize: viewSize, fieldsToSelect: fieldsToSelect]"
+                        in-map="serviceContext + [viewIndex: viewIndex*viewSize]"
                         out-map="productResult"/>
                 <if condition="productResult.productDetail">
                     <set field="products" from="productResult.productDetail.products"/>
@@ -98,6 +119,8 @@
                     </if>
                 </if>
             </iterate>
+            </if>
+
             <script>
                 kieSession.dispose();
             </script>
