@@ -25,17 +25,17 @@
     
     <moqui.basic.StatusType statusTypeId="RG_STATUS" description="Rule Group Status" hasTable="N"/>
     <moqui.basic.StatusType statusTypeId="ATP_RG_STATUS" parentTypeId="RG_STATUS" description="ATP Rule Group Status" hasTable="N"/>
-    <moqui.basic.StatusItem statusId="ATP_RG_DRAFT" description="Draft" sequenceId="01" statusCode="DRAFT" statusTypeId="ATP_RG_STATUS"/>
-    <moqui.basic.StatusItem statusId="ATP_RG_ACTIVE" description="Active" sequenceId="02" statusCode="ACTIVE" statusTypeId="ATP_RG_STATUS"/>
-    <moqui.basic.StatusItem statusId="ATP_RG_ARCHIVED" description="Archived" sequenceId="02" statusCode="ARCHIVED" statusTypeId="ATP_RG_STATUS"/>
+    <moqui.basic.StatusItem statusId="ATP_RG_DRAFT" description="Draft" sequenceNum="1" statusCode="DRAFT" statusTypeId="ATP_RG_STATUS"/>
+    <moqui.basic.StatusItem statusId="ATP_RG_ACTIVE" description="Active" sequenceNum="2" statusCode="ACTIVE" statusTypeId="ATP_RG_STATUS"/>
+    <moqui.basic.StatusItem statusId="ATP_RG_ARCHIVED" description="Archived" sequenceNum="3" statusCode="ARCHIVED" statusTypeId="ATP_RG_STATUS"/>
     <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="ATP_RG_DRAFT" toStatusId="ATP_RG_ACTIVE" transitionName="Active"/>
     <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="ATP_RG_ACTIVE" toStatusId="ATP_RG_ARCHIVED" transitionName="Active to Archived"/>
     <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="ATP_RG_DRAFT" toStatusId="ATP_RG_ARCHIVED" transitionName="Draft to Archived"/>
 
     <moqui.basic.StatusType statusTypeId="ATP_RULE_STATUS" parentTypeId="RG_STATUS" description="ATP Rule Status" hasTable="N"/>
-    <moqui.basic.StatusItem statusId="ATP_RULE_DRAFT" description="Draft" sequenceId="01" statusCode="DRAFT" statusTypeId="ATP_RULE_STATUS"/>
-    <moqui.basic.StatusItem statusId="ATP_RULE_ACTIVE" description="Active" sequenceId="02" statusCode="ACTIVE" statusTypeId="ATP_RULE_STATUS"/>
-    <moqui.basic.StatusItem statusId="ATP_RULE_ARCHIVED" description="Archived" sequenceId="02" statusCode="ARCHIVED" statusTypeId="ATP_RULE_STATUS"/>
+    <moqui.basic.StatusItem statusId="ATP_RULE_DRAFT" description="Draft" sequenceNum="1" statusCode="DRAFT" statusTypeId="ATP_RULE_STATUS"/>
+    <moqui.basic.StatusItem statusId="ATP_RULE_ACTIVE" description="Active" sequenceNum="2" statusCode="ACTIVE" statusTypeId="ATP_RULE_STATUS"/>
+    <moqui.basic.StatusItem statusId="ATP_RULE_ARCHIVED" description="Archived" sequenceNum="3" statusCode="ARCHIVED" statusTypeId="ATP_RULE_STATUS"/>
     <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="ATP_RULE_DRAFT" toStatusId="ATP_RULE_ACTIVE" transitionName="Active"/>
     <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="ATP_RULE_DRAFT" toStatusId="ATP_RULE_ARCHIVED" transitionName="Draft to Archived"/>
     <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="ATP_RULE_ACTIVE" toStatusId="ATP_RULE_ARCHIVED" transitionName="Active to Archived"/>
