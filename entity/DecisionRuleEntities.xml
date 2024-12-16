@@ -41,10 +41,10 @@ under the License.
         <relationship type="one-nofk" related="moqui.service.job.ServiceJob" short-alias="schedule">
             <key-map field-name="jobName"/>
         </relationship>
-        <relationship type="one" fk-name="RG_STATUS" related="org.apache.ofbiz.common.status.StatusItem" short-alias="status">
+        <relationship type="one" fk-name="RG_STATUS" related="moqui.basic.StatusItem" short-alias="status">
             <key-map field-name="statusId"/>
         </relationship>
-        <relationship type="one" fk-name="RG_TYPE_ENUM" title="RuleGroupType" related="org.apache.ofbiz.common.enum.Enumeration" short-alias="ruleGroupType">
+        <relationship type="one" fk-name="RG_TYPE_ENUM" title="RuleGroupType" related="moqui.basic.Enumeration" short-alias="ruleGroupType">
             <key-map field-name="groupTypeEnumId" related="enumId"/>
         </relationship>
         <relationship type="many" related="co.hotwax.rule.DecisionRule" short-alias="decisionRules">
@@ -71,7 +71,7 @@ under the License.
         <field name="sequenceNum" type="number-integer" enable-audit-log="true"><description>Sequence number for ordering.</description></field>
         <field name="createdDate" type="date-time"><description>Date and time when the rule was created.</description></field>
         <field name="createdByUser" type="id-long"><description>User login ID of the creator.</description></field>
-        <relationship type="one" fk-name="RULE_STATUS" related="org.apache.ofbiz.common.status.StatusItem" short-alias="status">
+        <relationship type="one" fk-name="RULE_STATUS" related="moqui.basic.StatusItem" short-alias="status">
             <key-map field-name="statusId"/>
         </relationship>
         <relationship type="one" fk-name="RULE_GROUP" related="co.hotwax.rule.RuleGroup" short-alias="ruleGroup">
@@ -98,7 +98,7 @@ under the License.
         <field name="fieldValue" type="text-long" enable-audit-log="true"><description>Value of the condition.</description></field>
         <field name="sequenceNum" type="number-integer" enable-audit-log="true"><description>Sequence number for ordering.</description></field>
         <field name="createdDate" type="date-time"><description>Date and time when the condition was created.</description></field>
-        <relationship type="one" fk-name="RULE_COND_TYPEENUM" title="RuleConditionType" related="org.apache.ofbiz.common.enum.Enumeration" short-alias="ruleConditionType">
+        <relationship type="one" fk-name="RULE_COND_TYPEENUM" title="RuleConditionType" related="moqui.basic.Enumeration" short-alias="ruleConditionType">
             <key-map field-name="conditionTypeEnumId" related="enumId"/>
         </relationship>
         <relationship type="one" fk-name="RULE_COND_RULE" related="co.hotwax.rule.DecisionRule" short-alias="decisionRule">
@@ -120,7 +120,7 @@ under the License.
         <relationship type="one" fk-name="RULE_ACTION_RULE" related="co.hotwax.rule.DecisionRule" short-alias="decisionRule">
             <key-map field-name="ruleId"/>
         </relationship>
-        <relationship type="one" fk-name="RULE_ACTION_TYPEENUM" title="RuleActionType" related="org.apache.ofbiz.common.enum.Enumeration" short-alias="ruleActionType">
+        <relationship type="one" fk-name="RULE_ACTION_TYPEENUM" title="RuleActionType" related="moqui.basic.Enumeration" short-alias="ruleActionType">
             <key-map field-name="actionTypeEnumId" related="enumId"/>
         </relationship>
         <master>
