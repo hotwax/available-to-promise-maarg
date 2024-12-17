@@ -1,12 +1,138 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://moqui.org/xsd/service-definition-3.xsd">
 
+    <service verb="get" noun="ProductFilterCondition" authenticate="false">
+        <in-parameters>
+            <parameter name="ruleGroupId" required="true"/>
+            <parameter name="productStoreId" required="true"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="condition"/>
+        </out-parameters>
+        <actions>
+            <set field="scanAll" from="false"/>
+
+            <entity-find-one entity-name="co.hotwax.rule.RuleGroup" value-field="ruleGroup">
+                <field-map field-name="ruleGroupId" from="ruleGroupId"/>
+                <field-map field-name="productStoreId" from="productStoreId"/>
+            </entity-find-one>
+            <if condition="!ruleGroup">
+                <return error="true" message="No rule group found."/>
+            </if>
+            
+            <!--Fetching last successful job run for the rule group-->
+            <entity-find entity-name="co.hotwax.rule.RuleGroupRun" list="ruleGroupRuns">
+                <econditions>
+                    <econdition field-name="ruleGroupId" from="ruleGroupId"/>
+                    <econdition field-name="productStoreId" from="productStoreId"/>
+                    <econdition field-name="hasError" value="N"/>
+                    <econdition field-name="endDate" operator="is-not-null"/>
+                </econditions>
+                <order-by field-name="-startDate"/>
+            </entity-find>
+            <set field="lastRuleGroupRun" from="ruleGroupRuns ? ruleGroupRuns[0] : null"/>
+
+            <if condition="!lastRuleGroupRun || !lastRuleGroupRun.startDate">
+                <then>
+                    <!--If the rule group has never run then scan all the products  -->
+                    <set field="scanAll" from="true"/>
+                </then>
+                <else-if condition="!ruleGroup.lastModifiedDate || ruleGroup.lastModifiedDate &gt; lastRuleGroupRun.startDate">
+                    <!--If the rule group is modified after last successful run then scan all the products -->
+                    <set field="scanAll" from="true"/>
+                </else-if>
+                <else>
+                    <!--Even if the rule group is not modified after the last successful run check for the internal data modifications as well, e.g. new config facilities are added, or new facility group members are added.-->
+                    <!--For threshold rule groups -->
+                    <if condition="ruleGroup.groupTypeEnumId == 'RG_THRESHOLD'">
+                        <then>
+                            <!--Check if any rule is setup for setting threshold on all the config facilities of a given product store-->
+                            <if condition="ec.entity.find('co.hotwax.common.DecisionRuleAndCondition').condition('ruleGroupId', ruleGroupId).condition('conditionTypeEnumId', 'ENTCT_ATP_FACILITIES').condition('fieldValue', 'ALL').count()">
+                                <entity-find entity-name="co.hotwax.product.store.ProductStoreFacilityDetail" list="configFacilities">
+                                    <econditions>
+                                        <econdition field-name="productStoreId" from="productStoreId"/>
+                                        <econdition field-name="facilityTypeId" value="CONFIGURATION"/>
+                                        <date-filter/>
+                                    </econditions>
+                                    <order-by field-name="-fromDate"/>
+                                </entity-find>
+                                <set field="recentConfigFacility" from="configFacilities ? configFacilities[0] : null"/>
+
+                                <!--Check the most recent config facility, if it is added after the last run then scan all the products-->
+                                <if condition="recentConfigFacility &amp;&amp; recentConfigFacility.fromDate &gt; lastRuleGroupRun.startDate">
+                                    <set field="scanAll" from="true"/>
+                                </if>
+                            </if>
+                        </then>
+                        <else>
+                            <!--For safety stock, store pickup and shipping rule groups -->
+                            <!--Check if any rule is setup for all the facility groups, which means all the physical facilities of a given product store-->
+                            <if condition="ec.entity.find('co.hotwax.common.DecisionRuleAndCondition').condition('ruleGroupId', ruleGroupId).condition('conditionTypeEnumId', 'ENTCT_ATP_FAC_GROUPS').condition('fieldValue', 'ALL').count()">
+                                <!--Fetch the most recently added facility-->
+                                <entity-find entity-name="co.hotwax.product.store.ProductStoreFacilityDetail" list="facilities">
+                                    <econditions>
+                                        <econdition field-name="productStoreId" from="productStoreId"/>
+                                        <econdition field-name="facilityTypeId" operator="not-equals" value="VIRTUAL_FACILITY"/>
+                                        <econdition field-name="parentFacilityTypeId" operator="not-equals" value="VIRTUAL_FACILITY"/>
+                                        <date-filter/>
+                                    </econditions>
+                                    <order-by field-name="-fromDate"/>
+                                </entity-find>
+                                <set field="recentFacility" from="facilities ? facilities[0] : null"/>
+
+                                <!--Check the most recently added facility, if it is added after the last run then scan all the products-->
+                                <if condition="recentFacility &amp;&amp; recentFacility.fromDate &gt; lastRuleGroupRun.startDate">
+                                    <set field="scanAll" from="true"/>
+                                </if>
+                                <else>
+                                    <!-- Check if rules are setup for facility group(s)-->
+                                    <entity-find entity-name="co.hotwax.common.DecisionRuleAndCondition" list="facilityGroupConditions">
+                                        <econditions>
+                                            <econdition field-name="ruleGroupId" from="ruleGroupId"/>
+                                            <econdition field-name="conditionTypeEnumId" value="ENTCT_ATP_FAC_GROUPS"/>
+                                        </econditions>
+                                    </entity-find>
+                                    <if condition="facilityGroupConditions">
+                                        <set field="facilityGroupIds" from="[]"/>
+                                        <iterate list="facilityGroupConditions" entry="facilityGroupCondition">
+                                            <script>facilityGroupIds.addAll(co.hotwax.common.DecisionRuleHelper.valueToCollection(facilityGroupCondition.fieldValue))</script>
+                                        </iterate>
+                                        <!--Fetch the recent facility added in the facility group(s)-->
+                                        <entity-find entity-name="org.apache.ofbiz.product.facility.FacilityGroupMember" list="facilityGroupMembers">
+                                            <econditions>
+                                                <econdition field-name="facilityGroupId" operator="in" from="facilityGroupIds"/>
+                                            </econditions>
+                                            <date-filter/>
+                                            <order-by field-name="-fromDate"/>
+                                        </entity-find>
+                                        <set field="recentGroupMember" from="facilityGroupMembers ? facilityGroupMembers[0] : null"/>
+
+                                        <!--Check the most recently added facility, if it is added after the last run then scan all the products-->
+                                        <if condition="recentGroupMember &amp;&amp; recentGroupMember.fromDate &gt; lastRuleGroupRun.startDate">
+                                            <set field="scanAll" from="true"/>
+                                        </if>
+                                    </if>
+                                </else>
+                            </if>
+                        </else>
+                    </if>
+                </else>
+            </if>
+
+            <if condition="!scanAll">
+                <set field="lastRunStartDateTimeString"
+                     from="java.time.ZonedDateTime.ofInstant(lastRuleGroupRun.startDate.toInstant(), java.time.ZoneId.of('UTC')).format(java.time.format.DateTimeFormatter.ISO_INSTANT)"/>
+                <set field="condition" value="updatedDatetime:[${lastRunStartDateTimeString} TO *]"/>
+            </if>
+        </actions>
+    </service>
     <service verb="run" noun="ExportProductFacilityDetail" authenticate="false" transaction-timeout="7200">
         <description>Executes product facility rules.</description>
         <in-parameters>
             <parameter name="ruleGroupId" type="String" required="true"/>
             <parameter name="productStoreId" type="String" required="true"/>
             <parameter name="systemMessageRemoteId" type="String" required="true"/>
+            <parameter name="scanAllProducts" default-value="N"/>
         </in-parameters>
         <actions>
             <entity-find-one entity-name="co.hotwax.rule.RuleGroup" value-field="ruleGroup">
@@ -47,22 +173,13 @@
             <set field="fieldsToSelect" value="productId,tags,productFeatures"/>
             <set field="serviceContext" from="[viewIndex: viewIndex, viewSize: viewSize, fieldsToSelect: fieldsToSelect]"/>
 
-            <!--Fetching last successful job run for the rule group-->
-            <entity-find entity-name="co.hotwax.rule.RuleGroupRun" list="ruleGroupRuns">
-                <econditions>
-                    <econdition field-name="ruleGroupId" from="ruleGroupId"/>
-                    <econdition field-name="productStoreId" from="productStoreId"/>
-                    <econdition field-name="hasError" value="N"/>
-                    <econdition field-name="endDate" operator="is-not-null"/>
-                </econditions>
-                <order-by field-name="-startDate"/>
-            </entity-find>
-            <set field="lastRuleGroupRun" from="ruleGroupRuns ? ruleGroupRuns[0] : null"/>
-            <!--Checking if the rule group is modified after last successful run in order -->
-            <if condition="lastRuleGroupRun &amp;&amp; lastRuleGroupRun.startDate &amp;&amp; ruleGroup.lastModifiedDate &amp;&amp; ruleGroup.lastModifiedDate &lt; lastRuleGroupRun.startDate">
-                <set field="lastRunStartDateTimeString"
-                     from="java.time.ZonedDateTime.ofInstant(lastRuleGroupRun.startDate.toInstant(), java.time.ZoneId.of('UTC')).format(java.time.format.DateTimeFormatter.ISO_INSTANT)"/>
-                <set field="serviceContext" from="serviceContext + [filter:'updatedDatetime:[' + lastRunStartDateTimeString + ' TO *]']"/>
+            <if condition="scanAllProducts != 'Y'">
+                <service-call name="co.hotwax.product.ProductFacilityServices.get#ProductFilterCondition"
+                              in-map="context"
+                              out-map="result"/>
+                <if condition="result.condition">
+                    <set field="serviceContext.filter" from="result.condition"/>
+                </if>
             </if>
 
             <service-call name="co.hotwax.product.ProductFacilityServices.get#Products"
