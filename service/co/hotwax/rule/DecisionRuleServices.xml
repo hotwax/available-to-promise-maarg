@@ -59,6 +59,8 @@
             <parameter name="ruleGroupId" required="true"/>
             <parameter name="productStoreId" required="true"/>
             <parameter name="systemMessageRemoteId" required="true"/>
+            <parameter name="scanAllProducts"/>
+
             <!--
             In order to leverage the Service semaphore capabilities provided by the framework, we have chosen to include ruleGroupId as an input parameter.
             While ruleGroupId already exists in the RuleGroup entity,
@@ -89,7 +91,7 @@
                     out-map="ruleGroupResult"/>
 
             <service-call name="co.hotwax.product.ProductFacilityServices.run#ExportProductFacilityDetail"
-                    in-map="[ruleGroupId:ruleGroupId, productStoreId: productStoreId, systemMessageRemoteId: systemMessageRemoteId]"
+                    in-map="[ruleGroupId:ruleGroupId, productStoreId: productStoreId, systemMessageRemoteId: systemMessageRemoteId, scanAllProducts: scanAllProducts]"
                     out-map="result"/>
             <script>
                 def ruleGroupRunResult = null
@@ -158,6 +160,7 @@
         <in-parameters>
             <parameter name="ruleGroupId" required="true"/>
             <parameter name="systemMessageRemoteId" required="true"/>
+            <parameter name="scanAllProducts"/>
             <auto-parameters entity-name="moqui.service.job.ServiceJob" include="nonpk">
                 <exclude field-name="description"/>
                 <exclude field-name="serviceName"/>
@@ -210,6 +213,7 @@
                 <service-call name="create#moqui.service.job.ServiceJobParameter" in-map="[jobName: jobName, parameterName: 'ruleGroupId', parameterValue: ruleGroupId]"/>
                 <service-call name="create#moqui.service.job.ServiceJobParameter" in-map="[jobName: jobName, parameterName: 'productStoreId', parameterValue: ruleGroup.productStoreId]"/>
                 <service-call name="create#moqui.service.job.ServiceJobParameter" in-map="[jobName: jobName, parameterName: 'systemMessageRemoteId', parameterValue: systemMessageRemoteId]"/>
+                <service-call name="create#moqui.service.job.ServiceJobParameter" in-map="[jobName: jobName, parameterName: 'scanAllProducts', parameterValue: scanAllProducts]"/>
                 <return message="Rule group schedule has been created successfully."/>
                 <else>
                     <service-call name="update#moqui.service.job.ServiceJob" in-map="context + [jobName: serviceJob.jobName]" out-map="context"/>
