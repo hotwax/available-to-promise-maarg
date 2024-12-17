@@ -80,16 +80,6 @@
             </resource>
         </id>
     </resource>
-    <resource name="products" description="Get the products">
-        <id name="productId">
-            <resource name="tags">
-                <method type="get"><entity name="org.apache.ofbiz.product.product.ProductKeyword" operation="list"/></method>
-            </resource>
-        </id>
-        <resource name="features">
-            <method type="get"><entity name="co.hotwax.product.feature.ProductFeatureAndType" operation="list"/></method>
-        </resource>
-    </resource>
     <resource name="solrFacets">
         <method type="get"><service name="co.hotwax.common.CommonServices.autoComplete#SolrFacet"/></method>
     </resource>
