@@ -23,8 +23,8 @@
     <moqui.basic.Enumeration enumId="ATP_ALLOW_BROKERING" description="Enable brokering" sequenceNum="20" enumTypeId="ATP_RULE_ACT_TYPE" enumCode="SET_ALLOW_BROKERING"/>
     <moqui.basic.Enumeration enumId="ATP_ALLOW_PICKUP" description="Enable pickup" sequenceNum="25" enumTypeId="ATP_RULE_ACT_TYPE" enumCode="SET_ALLOW_PICKUP"/>
     
-    <moqui.basic.StatusType statusTypeId="RG_STATUS" description="Rule Group Status" hasTable="N"/>
-    <moqui.basic.StatusType statusTypeId="ATP_RG_STATUS" parentTypeId="RG_STATUS" description="ATP Rule Group Status" hasTable="N"/>
+    <moqui.basic.StatusType statusTypeId="RG_STATUS" description="Rule Group Status"/>
+    <moqui.basic.StatusType statusTypeId="ATP_RG_STATUS" parentTypeId="RG_STATUS" description="ATP Rule Group Status"/>
     <moqui.basic.StatusItem statusId="ATP_RG_DRAFT" description="Draft" sequenceNum="1" statusCode="DRAFT" statusTypeId="ATP_RG_STATUS"/>
     <moqui.basic.StatusItem statusId="ATP_RG_ACTIVE" description="Active" sequenceNum="2" statusCode="ACTIVE" statusTypeId="ATP_RG_STATUS"/>
     <moqui.basic.StatusItem statusId="ATP_RG_ARCHIVED" description="Archived" sequenceNum="3" statusCode="ARCHIVED" statusTypeId="ATP_RG_STATUS"/>
@@ -32,7 +32,7 @@
     <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="ATP_RG_ACTIVE" toStatusId="ATP_RG_ARCHIVED" transitionName="Active to Archived"/>
     <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="ATP_RG_DRAFT" toStatusId="ATP_RG_ARCHIVED" transitionName="Draft to Archived"/>
 
-    <moqui.basic.StatusType statusTypeId="ATP_RULE_STATUS" parentTypeId="RG_STATUS" description="ATP Rule Status" hasTable="N"/>
+    <moqui.basic.StatusType statusTypeId="ATP_RULE_STATUS" parentTypeId="RG_STATUS" description="ATP Rule Status"/>
     <moqui.basic.StatusItem statusId="ATP_RULE_DRAFT" description="Draft" sequenceNum="1" statusCode="DRAFT" statusTypeId="ATP_RULE_STATUS"/>
     <moqui.basic.StatusItem statusId="ATP_RULE_ACTIVE" description="Active" sequenceNum="2" statusCode="ACTIVE" statusTypeId="ATP_RULE_STATUS"/>
     <moqui.basic.StatusItem statusId="ATP_RULE_ARCHIVED" description="Archived" sequenceNum="3" statusCode="ARCHIVED" statusTypeId="ATP_RULE_STATUS"/>
