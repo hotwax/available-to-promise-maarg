@@ -23,6 +23,7 @@
         </in-parameters>
         <out-parameters>
             <parameter name="response" type="Map"/>
+            <parameter name="grouped" type="Map"/>
         </out-parameters>
     </service>
 </services>
