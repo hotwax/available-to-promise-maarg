@@ -31,6 +31,7 @@
                 import org.kie.api.io.ResourceType;
                 import org.kie.api.KieBase;
                 import org.kie.api.KieServices
+                import co.hotwax.common.CommerceUtil
 
                 kieServices = KieServices.Factory.get();
                 kieHelper = new KieHelper();
@@ -41,25 +42,37 @@
                 productFacilityDetail = [:]
             </script>
 
-            <set field="viewSize" value="100" type="Integer"/>
-            <set field="viewIndex" value="0" type="Integer"/>
-            <set field="fieldsToSelect" value="productId,tags,productFeatures"/>
+            <set field="viewSize" value="20" type="Integer"/>
+            <set field="serviceCtx" from="[viewSize: viewSize, viewIndex: 0, fieldsToSelect: 'productId,isVirtual,isVariant,tags,productFeatures', resultGroupingField: 'groupId']"/>
             <service-call name="co.hotwax.product.ProductFacilityServices.get#Products"
-                          in-map="[viewIndex: viewIndex, viewSize: viewSize, fieldsToSelect: fieldsToSelect]"
+                          in-map="serviceCtx + [viewIndex: 0]"
                           out-map="productResult"/>
-            <if condition="!productResult.productDetail">
+            <if condition="!productResult.productDetail || productResult.productDetail.totalCount == 0">
                 <return error="true" message="No products found."/>
             </if>
-            <set field="products" from="productResult.productDetail.products"/>
-            <set field="totalProducts" from="productResult.productDetail.totalCount"/>
-            <log message="Rule group ${ruleGroupId}: Total ${totalProducts} products to process."/>
+            <set field="productGroups" from="productResult.productDetail.productGroups"/>
+            <set field="totalGroups" from="productResult.productDetail.totalCount"/>
+            <log message="Rule group ${ruleGroupId}: Total ${totalGroups} product groups to process."/>
 
-            <iterate list="products" entry="product">
-                <script>
-                    kieSession.setGlobal("productFacilityDetail", productFacilityDetail);
-                    kieSession.insert(product);
-                    int numberOfRulesFired = kieSession.fireAllRules();
-                </script>
+            <iterate list="productGroups" entry="productGroup">
+                <set field="products" from="productGroup.doclist.docs"/>
+                <set field="virtualProduct" from="products.find { it.isVirtual == 'true' }"/>
+
+                <iterate list="products" entry="product">
+                    <!--skip virtual product-->
+                    <if condition="product.isVirtual == 'true'">
+                        <continue/>
+                    </if>
+                    <!--considering tags are always managed on virtual product, hence copying virtual product tags to it's variant -->
+                    <if condition="product.isVariant == 'true' &amp;&amp; virtualProduct">
+                      <set field="product.tags" from="virtualProduct.tags"/>
+                    </if>
+                    <script>
+                        kieSession.setGlobal("productFacilityDetail", productFacilityDetail);
+                        kieSession.insert(product);
+                        int numberOfRulesFired = kieSession.fireAllRules();
+                    </script>
+                </iterate>
             </iterate>
             <set field="csvFilePath" value=""/>
             <if condition="productFacilityDetail.values()">
@@ -70,24 +83,36 @@
             <set field="csvFilePath" from="result.csvFilePath"/>
             <set field="productFacilityDetail" from="[:]"/>
             </if>
+            <if condition="totalGroups > viewSize">
             <script>
-                import co.hotwax.common.CommerceUtil
-                paginationValues = CommerceUtil.getPaginationValues(viewSize, 0, totalProducts)
+                paginationValues = CommerceUtil.getPaginationValues(viewSize, 0, totalGroups)
                 viewIndexLast = paginationValues.viewIndexLast
                 viewIndexList = (1..viewIndexLast).toList()
             </script>
             <iterate list="viewIndexList" entry="viewIndex">
                 <service-call name="co.hotwax.product.ProductFacilityServices.get#Products"
-                        in-map="[viewIndex: viewIndex*viewSize, viewSize: viewSize, fieldsToSelect: fieldsToSelect]"
+                        in-map="serviceCtx + [viewIndex: viewIndex*viewSize]"
                         out-map="productResult"/>
-                <if condition="productResult.productDetail">
-                    <set field="products" from="productResult.productDetail.products"/>
-                    <iterate list="products" entry="product">
-                        <script>
-                            kieSession.setGlobal("productFacilityDetail", productFacilityDetail);
-                            kieSession.insert(product);
-                            int numberOfRulesFired = kieSession.fireAllRules();
-                        </script>
+                <if condition="productResult.productDetail &amp;&amp; productResult.productDetail.totalCount > 0">
+                    <set field="productGroups" from="productResult.productDetail.productGroups"/>
+                    <iterate list="productGroups" entry="productGroup">
+                        <set field="products" from="productGroup.doclist.docs"/>
+                        <set field="virtualProduct" from="products.find { it.isVirtual == 'true' }"/>
+                        <iterate list="products" entry="product">
+                            <!--skip virtual product-->
+                            <if condition="product.isVirtual == 'true'">
+                                <continue/>
+                            </if>
+                            <!--considering tags are always managed on virtual product, hence copying virtual product tags to it's variant -->
+                            <if condition="product.isVariant == 'true' &amp;&amp; virtualProduct">
+                                <set field="product.tags" from="virtualProduct.tags"/>
+                            </if>
+                            <script>
+                                kieSession.setGlobal("productFacilityDetail", productFacilityDetail);
+                                kieSession.insert(product);
+                                int numberOfRulesFired = kieSession.fireAllRules();
+                            </script>
+                        </iterate>
                     </iterate>
                     <if condition="productFacilityDetail.values()">
                     <service-call name="co.hotwax.product.ProductFacilityServices.prepare#ProductFacilityCsv"
@@ -98,6 +123,7 @@
                     </if>
                 </if>
             </iterate>
+            </if>
             <script>
                 kieSession.dispose();
             </script>
@@ -169,6 +195,8 @@
             <parameter name="query"/>
             <parameter name="fieldsToSelect"/>
             <parameter name="filter"/>
+            <parameter name="resultGroupingField"/>
+            <parameter name="groupLimit" default-value="10000"/>
             <parameter name="viewIndex" type="Integer"/>
             <parameter name="viewSize" type="Integer"/>
         </in-parameters>
@@ -177,18 +205,30 @@
         </out-parameters>
         <actions>
             <set field="productDetail" from="[:]"/>
-            <set field="filterConditions" value="docType:PRODUCT AND isVirtual:false"/>
+            <set field="filterConditions" value="docType:PRODUCT"/>
             <if condition="filter">
                 <set field="filterConditions" value="${filterConditions} AND ${filter}"/>
             </if>
-            <set field="queryObject" from="[query: query ?: '*:*', filter: filterConditions, params: [rows: viewSize ?: 10, start: viewIndex ?: 0]]" />
+            <set field="params" from="[rows: (viewSize ?: 10), start: (viewIndex ?: 0)]"/>
+            <if condition="resultGroupingField">
+                <set field="params" from="params + ['group': true, 'group.field': resultGroupingField, 'group.limit': (groupLimit ?: 10), 'group.ngroups': true]"/>
+            </if>
+            <set field="queryObject" from="[query: (query ?: '*:*'), filter: filterConditions ?: [], params: params]"/>
             <if condition="fieldsToSelect">
                 <set field="queryObject.fields" from="fieldsToSelect"/>
             </if>
             <service-call name="co.hotwax.common.CommonServices.run#SolrQuery" in-map="[json:queryObject]" out-map="outResult"/>
             <if condition="outResult">
-                <set field="productDetail.products" from="outResult.response.docs"/>
-                <set field="productDetail.totalCount" from="outResult.response.numFound"/>
+                <if condition="resultGroupingField &amp;&amp; outResult.grouped">
+                    <then>
+                        <set field="productDetail.productGroups" from="outResult.grouped[resultGroupingField].groups"/>
+                        <set field="productDetail.totalCount" from="outResult.grouped[resultGroupingField].ngroups"/>
+                    </then>
+                    <else>
+                        <set field="productDetail.products" from="outResult.response.docs"/>
+                        <set field="productDetail.totalCount" from="outResult.response.numFound"/>
+                    </else>
+                </if>
             </if>
             <log message="${viewSize} products are fetched successfully from index ${viewIndex}."/>
         </actions>
