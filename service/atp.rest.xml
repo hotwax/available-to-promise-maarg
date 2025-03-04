@@ -56,13 +56,13 @@
     <resource name="facilities" description="Get the facilities">
         <method type="post"><entity name="org.apache.ofbiz.product.facility.Facility" operation="create"/></method>
         <method type="get"><entity name="co.hotwax.facility.FacilityAndType" operation="list"/></method>
-        <resource name="orderCount">
-            <method type="get"><entity name="co.hotwax.facility.FacilityOrderCount" operation="list"/></method>
-        </resource>
         <id name="facilityId">
             <method type="put"><entity name="org.apache.ofbiz.product.facility.Facility" operation="update"/></method>
             <method type="get"><entity name="co.hotwax.facility.FacilityAndType" operation="one"/></method>
         </id>
+        <resource name="orderCount">
+            <method type="get"><entity name="co.hotwax.facility.FacilityOrderCount" operation="list"/></method>
+        </resource>
     </resource>
     <resource name="facilityGroups" description="Get the facility groups">
         <method type="post"><entity name="org.apache.ofbiz.product.facility.FacilityGroup" operation="create"/></method>
