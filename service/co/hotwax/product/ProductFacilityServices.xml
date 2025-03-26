@@ -115,10 +115,18 @@
                         </iterate>
                     </iterate>
                     <if condition="productFacilityDetail.values()">
-                    <service-call name="co.hotwax.product.ProductFacilityServices.prepare#ProductFacilityCsv"
+                        <set field="productFacilityJson" from="groovy.json.JsonOutput.toJson(productFacilityDetail.values())"/>
+                        <script>
+                            recordsLoaded = ec.entity.makeDataLoader().jsonText(productFacilityJson).load()
+                        </script>
+                        <message>Loaded ${recordsLoaded} in ProductFacility</message>
+
+                        <!--
+                        <service-call name="co.hotwax.product.ProductFacilityServices.prepare#ProductFacilityCsv"
                             in-map="[products: productFacilityDetail.values(), systemMessageTypeId: 'ExportProductFacilityDetail', csvFilePath: csvFilePath]"
                             out-map="result"/>
                     <set field="csvFilePath" from="result.csvFilePath"/>
+                        -->
                     <set field="productFacilityDetail" from="[:]"/>
                     </if>
                 </if>
@@ -127,8 +135,8 @@
             <script>
                 kieSession.dispose();
             </script>
-
             <!--If no products fall under any rule, no CSV will be created, and there will be no need to attempt to upload it to FTP.-->
+            <!--
             <if condition="!csvFilePath">
                 <return message="No products falls under any rule in this rule group."/>
             </if>
@@ -136,6 +144,7 @@
             <service-call name="co.hotwax.product.ProductFacilityServices.upload#ProductFacilityCsvToFtp" transaction="force-new"
                     in-map="[filePath: csvFilePath, systemMessageRemoteId: systemMessageRemoteId]"
                     out-map="result"/>
+            -->
 
             <return message="Product facility rules executed successfully for rule group [${ruleGroupId}]."/>
         </actions>
