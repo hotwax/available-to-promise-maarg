@@ -115,7 +115,7 @@
                         </iterate>
                     </iterate>
                     <if condition="productFacilityDetail.values()">
-                        <service-call name="co.hotwax.product.ProductFacilityServices.prepare#ProductFacilityCsv"
+                    <service-call name="co.hotwax.product.ProductFacilityServices.prepare#ProductFacilityCsv"
                             in-map="[products: productFacilityDetail.values(), systemMessageTypeId: 'ExportProductFacilityDetail', csvFilePath: csvFilePath]"
                             out-map="result"/>
                     <set field="csvFilePath" from="result.csvFilePath"/>
@@ -127,6 +127,7 @@
             <script>
                 kieSession.dispose();
             </script>
+            
             <!--If no products fall under any rule, no CSV will be created, and there will be no need to attempt to upload it to FTP.-->
             <if condition="!csvFilePath">
                 <return message="No products falls under any rule in this rule group."/>
