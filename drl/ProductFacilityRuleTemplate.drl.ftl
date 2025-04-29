@@ -94,7 +94,6 @@
             $actionValues.put("${ruleAction.fieldName}", "${ruleAction.fieldValue}")
             $actionValues.put("facilityId", "${facilityId}")
             $actionValues.put("productId", $product.get("productId"))
-            $actionValues.put("_entity", "org.apache.ofbiz.product.facility.ProductFacility")
             productFacilityDetail.put("${facilityId}-" + $product.get("productId"), $actionValues);
           </#list>
         </#list>
