@@ -133,9 +133,16 @@
                 <return message="No products falls under any rule in this rule group."/>
             </if>
 
+            <!--Writing directly to DB instead of putting it on SFTP and then other job reading and processing it from SFTP-->
+            <script>
+                recordsLoaded = ec.entity.makeDataLoader().location(csvFilePath).csvEntityName("org.apache.ofbiz.product.facility.ProductFacility").load()
+            </script>
+            <message>Loaded ${recordsLoaded} in ProductFacility</message>
+            <!--
+            Commenting this flow in context of direct DB write
             <service-call name="co.hotwax.product.ProductFacilityServices.upload#ProductFacilityCsvToFtp" transaction="force-new"
                     in-map="[filePath: csvFilePath, systemMessageRemoteId: systemMessageRemoteId]"
-                    out-map="result"/>
+                    out-map="result"/>-->
 
             <return message="Product facility rules executed successfully for rule group [${ruleGroupId}]."/>
         </actions>
