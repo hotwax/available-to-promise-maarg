@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://moqui.org/xsd/service-definition-3.xsd">
+    <!-- Deprecated : Do not use, instead use SearchService from maarg-util -->
     <service verb="autoComplete" noun="SolrFacet" type="oms-rest" location="AutoCompleteSolrFacet" method="post">
         <in-parameters>
             <parameter name="facetToSelect"/>
@@ -17,6 +18,7 @@
             <parameter name="response"/>
         </out-parameters>
     </service>
+    <!-- Deprecated : Do not use, instead use SearchService from maarg-util -->
     <service verb="run" noun="SolrQuery" type="oms-rest" location="solr-query" method="post">
         <in-parameters>
             <parameter name="json" type="Map"/>
