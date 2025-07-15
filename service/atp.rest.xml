@@ -84,7 +84,7 @@
         <method type="get"><service name="co.hotwax.search.SearchServices.autoComplete#SolrFacet"/></method>
     </resource>
     <resource name="checkOmsConnection">
-        <method type="get"><service name="co.hotwax.common.CommonServices.checkOmsConnection"/></method>
+        <method type="get"><service name="co.hotwax.common.CommonServices.check#OmsConnection"/></method>
     </resource>
     <resource name="serviceJobRuns">
         <id name="jobName">
