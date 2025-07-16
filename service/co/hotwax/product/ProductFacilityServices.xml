@@ -43,7 +43,9 @@
             </script>
 
             <set field="viewSize" value="20" type="Integer"/>
-            <set field="serviceCtx" from="[viewSize: viewSize, viewIndex: 0, fieldsToSelect: 'productId,isVirtual,isVariant,tags,productFeatures', resultGroupingField: 'groupId']"/>
+<!--            <set field="serviceCtx" from="[viewSize: viewSize, viewIndex: 0, fieldsToSelect: 'productId,isVirtual,isVariant,tags,productFeatures', resultGroupingField: 'groupId']"/>-->
+            <set field="productStoreFilter" value="productStoreIds_s:${ruleGroup.productStoreId}"/>
+            <set field="serviceCtx" from="[viewSize: viewSize, viewIndex: 0, fieldsToSelect: 'productId,isVirtual,isVariant,tags,productFeatures', resultGroupingField: 'groupId', filter: productStoreFilter]"/>
             <service-call name="co.hotwax.product.ProductFacilityServices.get#Products"
                           in-map="serviceCtx + [viewIndex: 0]"
                           out-map="productResult"/>
@@ -217,7 +219,7 @@
             <if condition="fieldsToSelect">
                 <set field="queryObject.fields" from="fieldsToSelect"/>
             </if>
-            <service-call name="co.hotwax.search.SearchServices.run#SolrQuery" in-map="[json:queryObject]" out-map="outResult"/>
+            <service-call name="co.hotwax.common.CommonServices.run#SolrQuery" in-map="[json:queryObject]" out-map="outResult"/>
             <if condition="outResult">
                 <if condition="resultGroupingField &amp;&amp; outResult.grouped">
                     <then>
