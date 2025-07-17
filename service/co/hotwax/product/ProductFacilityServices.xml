@@ -168,7 +168,6 @@
                 <set field="csvFilePathRef" from="ec.resource.expand(systemMessageType.receivePath, null,
                         [contentRoot: ec.user.getPreference('mantle.content.root') ?: 'dbresource://datamanager', dateTime:ec.l10n.format(nowDate, 'yyyy-MM-dd-HH-mm-ss-SSS')], false)"/>
                 <set field="csvFilePath" from="ec.resource.getLocationReference(csvFilePathRef).getUri().getPath()"/>
-                <set field="skipHeader" value="N"/>
             </if>
 
             <set field="csvTemplateLocation" value="component://available-to-promise/template/ExportProductFacility.csv.ftl"/>
@@ -177,6 +176,9 @@
             <script>
                 File productFacilityDetailFile = new File(csvFilePath)
                 if (!productFacilityDetailFile.parentFile.exists()) productFacilityDetailFile.parentFile.mkdirs()
+
+                //If the file does not exist, add the CSV header; otherwise, skip it.
+                if (!productFacilityDetailFile.exists()) skipHeader = "N"
 
                 Writer writer = new StringWriter()
                 ec.resourceFacade.template(csvTemplateLocation, writer)
