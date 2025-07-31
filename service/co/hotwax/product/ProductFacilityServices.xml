@@ -143,8 +143,11 @@
                 import org.moqui.util.RestClient
                 import org.moqui.impl.context.ContextJavaUtil
                 import co.hotwax.util.MaargUtil
+                import co.hotwax.auth.JWTManager
 
                 String omsInstanceUrl = System.getProperty("ofbiz.instance.url");
+                String userName = ec.user.getUsername()?: (parameters.defaultUserName?: 'system');
+                String token = JWTManager.createJwt(ec, ["userLoginId": userName]);
                 def endpoint = omsInstanceUrl + "/api/uploadAndImportFile"
                 RestClient restClient = ec.service.rest()
                 restClient.uri(endpoint)
@@ -153,7 +156,7 @@
                 restClient.addFieldPart("configId", configId)
                 restClient.addFieldPart("_uploadedFile_fileName", fileName)
                 restClient.addFieldPart("_uploadedFile_contentType", "text/csv")
-                restClient.addFilePart("uploadedFile", fileName, fileText)
+                restClient.addFilePart("uploadedFile", fileName, fileText).addHeader("Authorization", "Bearer " + token)
 
                 try {
                 def resp = restClient.call()
