@@ -144,27 +144,6 @@
                 import co.hotwax.util.MaargUtil
 
                 String omsInstanceUrl = System.getProperty("ofbiz.instance.url");
-                if (omsInstanceUrl == null || omsInstanceUrl.isEmpty()) {
-                EntityValue omsInstance = ecfi.entityFacade.find("moqui.service.message.SystemMessageRemote")
-                .condition("systemMessageRemoteId", "HC_OMS_CONFIG")
-                .useCache(true)
-                .disableAuthz()
-                .one();
-                    if (omsInstance != null &amp;&amp; omsInstance.getString("sendUrl") != null) {
-                    omsInstanceUrl = omsInstance.getString("sendUrl");
-                        }
-                    else {
-                        EntityValue omsInstanceProperty = ecfi.entityFacade.find("org.apache.ofbiz.common.property.SystemProperty")
-                        .condition("systemResourceId", "url")
-                        .condition("systemPropertyId", "content.url.prefix.secure")
-                        .useCache(true)
-                        .disableAuthz()
-                        .one();
-                        if (omsInstanceProperty != null) {
-                        omsInstanceUrl = omsInstanceProperty.getString("systemPropertyValue");
-                        }
-                    }
-                }
                 def endpoint = omsInstanceUrl + "/api/uploadAndImportFile"
                 RestClient restClient = ec.service.rest()
                 restClient.uri(endpoint)
@@ -177,7 +156,6 @@
 
                 try {
                 def resp = restClient.call()
-                response = ContextJavaUtil.jacksonMapper.readValue(resp.text(), Map.class)
                 }
                 catch (Exception e) {
                 ec.logger.error("Error uploading file: ${e.getMessage()}")
