@@ -134,9 +134,10 @@
                 <return message="No products falls under any rule in this rule group."/>
             </if>
             <set field="file" from="new java.io.File(csvFilePath)"/>
-            <set field="fileName" from="file.getName()"/>
             <set field="configId" value="IMP_PROD_FACILITY"/>
-            <set field="fileText" from="org.apache.commons.io.FileUtils.readFileToString(file, 'UTF-8')"/>
+            <set field="resourceRef" from="ec.resource.getLocationReference(csvFilePath)"/>
+            <set field="fileName" from="resourceRef.getFileName()"/>
+            <set field="fileText" from="resourceRef.getText()"/>
             <!--Upload csv directly to OMS with uploadandimportfile api-->
             <script>
                 import org.moqui.util.RestClient
