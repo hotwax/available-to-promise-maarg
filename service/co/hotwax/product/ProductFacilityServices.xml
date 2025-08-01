@@ -129,40 +129,40 @@
                 kieSession.dispose();
             </script>
 
-            <!--If no products fall under any rule, no CSV will be created, and there will be no need to attempt to upload it to FTP.-->
-            <if condition="!csvFilePath || !(new java.io.File(csvFilePath)).isFile()">
-                <return message="No products falls under any rule in this rule group."/>
-            </if>
-            <set field="file" from="new java.io.File(csvFilePath)"/>
-            <set field="configId" value="IMP_PROD_FACILITY"/>
+            <!--If no products fall under any rule, no CSV will be created, and there will be no need to attempt to upload the file.-->
             <set field="resourceRef" from="ec.resource.getLocationReference(csvFilePath)"/>
             <set field="fileName" from="resourceRef.getFileName()"/>
             <set field="fileText" from="resourceRef.getText()"/>
+            <if condition="!csvFilePath || !resourceRef.isFile()">
+                <return message="No products falls under any rule in this rule group."/>
+            </if>
+            <set field="configId" value="IMP_PROD_FACILITY"/>
             <!--Upload csv directly to OMS with uploadandimportfile api-->
             <script>
                 import org.moqui.util.RestClient
-                import org.moqui.impl.context.ContextJavaUtil
-                import co.hotwax.util.MaargUtil
                 import co.hotwax.auth.JWTManager
 
-                String omsInstanceUrl = System.getProperty("ofbiz.instance.url");
-                String userName = ec.user.getUsername()?: (parameters.defaultUserName?: 'system');
-                String token = JWTManager.createJwt(ec, ["userLoginId": userName]);
-                def endpoint = omsInstanceUrl + "/api/uploadAndImportFile"
+                omsInstanceUrl = System.getProperty("ofbiz.instance.url");
+                endpoint = omsInstanceUrl + "/api/uploadAndImportFile"
+                userName = ec.user.getUsername() ?: 'system';
+                token = JWTManager.createJwt(ec, ["userLoginId": userName]);
                 RestClient restClient = ec.service.rest()
-                restClient.uri(endpoint)
-                .method("POST")
-                .contentType("multipart/form-data")
-                restClient.addFieldPart("configId", configId)
-                restClient.addFieldPart("_uploadedFile_fileName", fileName)
-                restClient.addFieldPart("_uploadedFile_contentType", "text/csv")
-                restClient.addFilePart("uploadedFile", fileName, fileText).addHeader("Authorization", "Bearer " + token)
+                restClient
+                        .uri(endpoint)
+                        .method("POST")
+                        .addHeader("Authorization", "Bearer " + token)
+
+                restClient
+                        .addFieldPart("configId", configId)
+                        .addFieldPart("_uploadedFile_fileName", fileName)
+                        .addFieldPart("_uploadedFile_contentType", "text/csv")
+                        .addFilePart("uploadedFile", fileName, fileText).contentType("multipart/form-data")
 
                 try {
-                def resp = restClient.call()
+                    def resp = restClient.call()
                 }
                 catch (Exception e) {
-                ec.logger.error("Error uploading file: ${e.getMessage()}")
+                    ec.logger.error("Error uploading file: ${e.getMessage()}")
                 }
             </script>
             <return message="Product facility rules executed successfully for rule group [${ruleGroupId}]."/>
