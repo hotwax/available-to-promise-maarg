@@ -129,15 +129,42 @@
                 kieSession.dispose();
             </script>
 
-            <!--If no products fall under any rule, no CSV will be created, and there will be no need to attempt to upload it to FTP.-->
-            <if condition="!csvFilePath">
+            <!--If no products fall under any rule, no CSV will be created, and there will be no need to attempt to upload the file.-->
+            <set field="resourceRef" from="ec.resource.getLocationReference(csvFilePath)"/>
+            <set field="fileName" from="resourceRef.getFileName()"/>
+            <set field="fileText" from="resourceRef.getText()"/>
+            <if condition="!csvFilePath || !resourceRef.isFile()">
                 <return message="No products falls under any rule in this rule group."/>
             </if>
+            <set field="configId" value="IMP_PROD_FACILITY"/>
+            <!--Upload csv directly to OMS with uploadandimportfile api-->
+            <script>
+                import org.moqui.util.RestClient
+                import co.hotwax.auth.JWTManager
 
-            <service-call name="co.hotwax.product.ProductFacilityServices.upload#ProductFacilityCsvToFtp" transaction="force-new"
-                    in-map="[filePath: csvFilePath, systemMessageRemoteId: systemMessageRemoteId]"
-                    out-map="result"/>
+                omsInstanceUrl = System.getProperty("ofbiz.instance.url");
+                endpoint = omsInstanceUrl + "/api/uploadAndImportFile"
+                userName = ec.user.getUsername() ?: 'system';
+                token = JWTManager.createJwt(ec, ["userLoginId": userName]);
+                RestClient restClient = ec.service.rest()
+                restClient
+                        .uri(endpoint)
+                        .method("POST")
+                        .addHeader("Authorization", "Bearer " + token)
 
+                restClient
+                        .addFieldPart("configId", configId)
+                        .addFieldPart("_uploadedFile_fileName", fileName)
+                        .addFieldPart("_uploadedFile_contentType", "text/csv")
+                        .addFilePart("uploadedFile", fileName, fileText).contentType("multipart/form-data")
+
+                try {
+                    def resp = restClient.call()
+                }
+                catch (Exception e) {
+                    ec.logger.error("Error uploading file: ${e.getMessage()}")
+                }
+            </script>
             <return message="Product facility rules executed successfully for rule group [${ruleGroupId}]."/>
         </actions>
     </service>
